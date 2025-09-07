@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
             const size = (formData.get('size') as OpenAI.Images.ImageEditParams['size']) || 'auto';
             const quality = (formData.get('quality') as OpenAI.Images.ImageEditParams['quality']) || 'auto';
             const output_format =
-                (formData.get('output_format') as OpenAI.Images.ImageEditParams['output_format']) || 'webp';
+                (formData.get('output_format') as OpenAI.Images.ImageEditParams['output_format']) || 'webp'; // WebP padrão para edição
             const output_compression_str = formData.get('output_compression') as string | null;
 
             const imageFiles: File[] = [];
