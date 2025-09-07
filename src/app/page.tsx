@@ -72,7 +72,7 @@ type ApiImageResponseItem = {
 
 export default function HomePage() {
     const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-    const [currentUser, setCurrentUser] = React.useState<any>(null);
+    const [currentUser, setCurrentUser] = React.useState<{id: number; username: string; email: string; user_level: string; last_login: string} | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
     const [mode, setMode] = React.useState<'generate' | 'edit'>('generate');
     const [isPasswordRequiredByBackend, setIsPasswordRequiredByBackend] = React.useState<boolean | null>(null);
@@ -220,7 +220,7 @@ export default function HomePage() {
         }
     }, []);
 
-    const handleLoginSuccess = (user: any) => {
+    const handleLoginSuccess = (user: {id: number; username: string; email: string; user_level: string; last_login: string}) => {
         setCurrentUser(user);
         setIsAuthenticated(true);
     };
@@ -930,8 +930,8 @@ export default function HomePage() {
                                 editMaskPreviewUrl={editMaskPreviewUrl}
                                 setEditMaskPreviewUrl={setEditMaskPreviewUrl}
                             />
-                        </div>
-                    </div>
+                                </div>
+                            </div>
                     <div className='flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
                         {error && (
                             <Alert variant='destructive' className='mb-4 border-red-500/50 bg-red-900/20 text-red-300'>
@@ -966,8 +966,78 @@ export default function HomePage() {
                         onDeletePreferenceDialogChange={setDialogCheckboxStateSkipConfirm}
                     />
                 </div>
+                    </TabsContent>
 
-                <TabsContent value="users" className="space-y-6">
+                    <TabsContent value="edit" className="space-y-6">
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+                            <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
+                                <EditingForm
+                                    onSubmit={handleApiCall}
+                                    isLoading={isLoading || isSendingToEdit}
+                                    currentMode={mode}
+                                    onModeChange={setMode}
+                                    isPasswordRequiredByBackend={isPasswordRequiredByBackend}
+                                    clientPasswordHash={clientPasswordHash}
+                                    onOpenPasswordDialog={handleOpenPasswordDialog}
+                                    imageFiles={editImageFiles}
+                                    sourceImagePreviewUrls={editSourceImagePreviewUrls}
+                                    setImageFiles={setEditImageFiles}
+                                    setSourceImagePreviewUrls={setEditSourceImagePreviewUrls}
+                                    maxImages={MAX_EDIT_IMAGES}
+                                    editPrompt={editPrompt}
+                                    setEditPrompt={setEditPrompt}
+                                    editN={editN}
+                                    setEditN={setEditN}
+                                    editSize={editSize}
+                                    setEditSize={setEditSize}
+                                    editQuality={editQuality}
+                                    setEditQuality={setEditQuality}
+                                    editBrushSize={editBrushSize}
+                                    setEditBrushSize={setEditBrushSize}
+                                    editShowMaskEditor={editShowMaskEditor}
+                                    setEditShowMaskEditor={setEditShowMaskEditor}
+                                    editGeneratedMaskFile={editGeneratedMaskFile}
+                                    setEditGeneratedMaskFile={setEditGeneratedMaskFile}
+                                    editIsMaskSaved={editIsMaskSaved}
+                                    setEditIsMaskSaved={setEditIsMaskSaved}
+                                    editOriginalImageSize={editOriginalImageSize}
+                                    setEditOriginalImageSize={setEditOriginalImageSize}
+                                    editDrawnPoints={editDrawnPoints}
+                                    setEditDrawnPoints={setEditDrawnPoints}
+                                    editMaskPreviewUrl={editMaskPreviewUrl}
+                                    setEditMaskPreviewUrl={setEditMaskPreviewUrl}
+                                />
+                            </div>
+                            <div className='flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
+                                {error && (
+                                    <Alert variant='destructive' className='mb-4 border-red-500/50 bg-red-900/20 text-red-300'>
+                                        <AlertTitle className='text-red-200'>Error</AlertTitle>
+                                        <AlertDescription>{error}</AlertDescription>
+                                    </Alert>
+                                )}
+                                <ImageOutput
+                                    imageBatch={latestImageBatch}
+                                    viewMode={imageOutputView}
+                                    onViewChange={setImageOutputView}
+                                    altText='Generated image output'
+                                    isLoading={isLoading || isSendingToEdit}
+                                    onSendToEdit={handleSendToEdit}
+                                    currentMode={mode}
+                                    onDelete={handleDeleteImage}
+                                    onDownload={handleDownloadImage}
+                                    onDownloadAll={handleDownloadAllImages}
+                                    onRegenerate={handleRegenerateImage}
+                                    onRegenerateAll={handleRegenerateAllImages}
+                                    blobUrlCache={blobUrlCache}
+                                    onBlobUrlCacheChange={setBlobUrlCache}
+                                    effectiveStorageModeClient={effectiveStorageModeClient}
+                                    baseImagePreviewUrl={editSourceImagePreviewUrls[0] || null}
+                                />
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="users" className="space-y-6">
                     <UserManagement currentUser={currentUser} />
                 </TabsContent>
                 </Tabs>
