@@ -51,8 +51,8 @@ const formatDuration = (ms: number): string => {
 };
 
 const calculateCost = (value: number, rate: number): string => {
-    const cost = value * rate;
-    return isNaN(cost) ? 'N/A' : cost.toFixed(4);
+    const cost = value * rate * 5.20; // Convert to BRL
+    return isNaN(cost) ? 'N/A' : `R$ ${cost.toFixed(2)}`;
 };
 
 export function HistoryPanel({
@@ -77,12 +77,12 @@ export function HistoryPanel({
         let images = 0;
         history.forEach((item) => {
             if (item.costDetails) {
-                cost += item.costDetails.estimated_cost_usd;
+                cost += item.costDetails.estimated_cost_brl;
             }
             images += item.images?.length ?? 0;
         });
 
-        return { totalCost: Math.round(cost * 10000) / 10000, totalImages: images };
+        return { totalCost: Math.round(cost * 100) / 100, totalImages: images };
     }, [history]);
 
     const averageCost = totalImages > 0 ? totalCost / totalImages : 0;
@@ -109,7 +109,7 @@ export function HistoryPanel({
                                 <button
                                     className='mt-0.5 flex items-center gap-1 rounded-full bg-green-600/80 px-1.5 py-0.5 text-[12px] text-white transition-colors hover:bg-green-500/90'
                                     aria-label='Mostrar resumo do custo total'>
-                                    Custo Total: ${totalCost.toFixed(4)}
+                                    Custo Total: R$ {totalCost.toFixed(2)}
                                 </button>
                             </DialogTrigger>
                             <DialogContent className='border-neutral-700 bg-neutral-900 text-white sm:max-w-[450px]'>
@@ -123,9 +123,9 @@ export function HistoryPanel({
                                 <div className='space-y-1 pt-1 text-xs text-neutral-400'>
                                     <p>Preços para gpt-image-1:</p>
                                     <ul className='list-disc pl-4'>
-                                        <li>Entrada de Texto: $5 / 1M tokens</li>
-                                        <li>Entrada de Imagem: $10 / 1M tokens</li>
-                                        <li>Saída de Imagem: $40 / 1M tokens</li>
+                                        <li>Entrada de Texto: R$ 26,00 / 1M tokens</li>
+                                        <li>Entrada de Imagem: R$ 52,00 / 1M tokens</li>
+                                        <li>Saída de Imagem: R$ 208,00 / 1M tokens</li>
                                     </ul>
                                 </div>
                                 <div className='space-y-2 py-4 text-sm text-neutral-300'>
@@ -133,12 +133,12 @@ export function HistoryPanel({
                                         <span>Total de Imagens Geradas:</span> <span>{totalImages.toLocaleString()}</span>
                                     </div>
                                     <div className='flex justify-between'>
-                                        <span>Custo Médio por Imagem:</span> <span>${averageCost.toFixed(4)}</span>
+                                        <span>Custo Médio por Imagem:</span> <span>R$ {averageCost.toFixed(2)}</span>
                                     </div>
                                     <hr className='my-2 border-neutral-700' />
                                     <div className='flex justify-between font-medium text-white'>
                                         <span>Custo Total Estimado:</span>
-                                        <span>${totalCost.toFixed(4)}</span>
+                                        <span>R$ {totalCost.toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <DialogFooter>
@@ -259,7 +259,7 @@ export function HistoryPanel({
                                                         className='absolute top-1 right-1 z-20 flex items-center gap-0.5 rounded-full bg-green-600/80 px-1.5 py-0.5 text-[11px] text-white transition-colors hover:bg-green-500/90'
                                                         aria-label='Mostrar detalhamento do custo'>
                                                         <DollarSign size={12} />
-                                                        {item.costDetails.estimated_cost_usd.toFixed(4)}
+                                                        R$ {item.costDetails.estimated_cost_brl.toFixed(2)}
                                                     </button>
                                                 </DialogTrigger>
                                                 <DialogContent className='border-neutral-700 bg-neutral-900 text-white sm:max-w-[450px]'>
@@ -272,9 +272,9 @@ export function HistoryPanel({
                                                     <div className='space-y-1 pt-1 text-xs text-neutral-400'>
                                                         <p>Preços para gpt-image-1:</p>
                                                         <ul className='list-disc pl-4'>
-                                                            <li>Entrada de Texto: $5 / 1M tokens</li>
-                                                            <li>Entrada de Imagem: $10 / 1M tokens</li>
-                                                            <li>Saída de Imagem: $40 / 1M tokens</li>
+                                                            <li>Entrada de Texto: R$ 26,00 / 1M tokens</li>
+                                                            <li>Entrada de Imagem: R$ 52,00 / 1M tokens</li>
+                                                            <li>Saída de Imagem: R$ 208,00 / 1M tokens</li>
                                                         </ul>
                                                     </div>
                                                     <div className='space-y-2 py-4 text-sm text-neutral-300'>
@@ -282,12 +282,10 @@ export function HistoryPanel({
                                                             <span>Text Input Tokens:</span>{' '}
                                                             <span>
                                                                 {item.costDetails.text_input_tokens.toLocaleString()}{' '}
-                                                                (~$
-                                                                {calculateCost(
+                                                                ({calculateCost(
                                                                     item.costDetails.text_input_tokens,
                                                                     0.000005
-                                                                )}
-                                                                )
+                                                                )})
                                                             </span>
                                                         </div>
                                                         {item.costDetails.image_input_tokens > 0 && (
@@ -295,12 +293,10 @@ export function HistoryPanel({
                                                                 <span>Image Input Tokens:</span>{' '}
                                                                 <span>
                                                                     {item.costDetails.image_input_tokens.toLocaleString()}{' '}
-                                                                    (~$
-                                                                    {calculateCost(
+                                                                    ({calculateCost(
                                                                         item.costDetails.image_input_tokens,
                                                                         0.00001
-                                                                    )}
-                                                                    )
+                                                                    )})
                                                                 </span>
                                                             </div>
                                                         )}
@@ -308,19 +304,17 @@ export function HistoryPanel({
                                                             <span>Image Output Tokens:</span>{' '}
                                                             <span>
                                                                 {item.costDetails.image_output_tokens.toLocaleString()}{' '}
-                                                                (~$
-                                                                {calculateCost(
+                                                                ({calculateCost(
                                                                     item.costDetails.image_output_tokens,
                                                                     0.00004
-                                                                )}
-                                                                )
+                                                                )})
                                                             </span>
                                                         </div>
                                                         <hr className='my-2 border-neutral-700' />
                                                         <div className='flex justify-between font-medium text-white'>
-                                                            <span>Total Estimated Cost:</span>
+                                                            <span>Custo Total Estimado:</span>
                                                             <span>
-                                                                ${item.costDetails.estimated_cost_usd.toFixed(4)}
+                                                                R$ {item.costDetails.estimated_cost_brl.toFixed(2)}
                                                             </span>
                                                         </div>
                                                     </div>

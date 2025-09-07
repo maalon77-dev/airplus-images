@@ -8,6 +8,7 @@ type ApiUsage = {
 
 export type CostDetails = {
     estimated_cost_usd: number;
+    estimated_cost_brl: number;
     text_input_tokens: number;
     image_input_tokens: number;
     image_output_tokens: number;
@@ -16,6 +17,9 @@ export type CostDetails = {
 const TEXT_INPUT_COST_PER_TOKEN = 0.000005;
 const IMAGE_INPUT_COST_PER_TOKEN = 0.00001;
 const IMAGE_OUTPUT_COST_PER_TOKEN = 0.00004;
+
+// Taxa de conversão USD para BRL (atualizada periodicamente)
+const USD_TO_BRL_RATE = 5.20;
 
 /**
  * Estimates the cost of a gpt-image-1 API call based on token usage.
@@ -45,9 +49,11 @@ export function calculateApiCost(usage: ApiUsage | undefined | null): CostDetail
 
     // Round to 4 decimal places
     const costRounded = Math.round(costUSD * 10000) / 10000;
+    const costBRL = Math.round(costRounded * USD_TO_BRL_RATE * 100) / 100;
 
     return {
         estimated_cost_usd: costRounded,
+        estimated_cost_brl: costBRL,
         text_input_tokens: textInT,
         image_input_tokens: imgInT,
         image_output_tokens: imgOutT
