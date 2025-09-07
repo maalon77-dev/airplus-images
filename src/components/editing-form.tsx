@@ -490,6 +490,9 @@ export function EditingForm({
 
                     <div className='space-y-2'>
                         <Label className='text-white'>Source Image(s) [Max: 10]</Label>
+                        <div className='text-xs text-white/50 mb-1'>
+                            💡 Tip: You can also paste images using Ctrl+V
+                        </div>
                         <Label
                             htmlFor='image-files-input'
                             className='flex h-10 w-full cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black px-3 py-2 text-sm transition-colors hover:bg-white/5'>

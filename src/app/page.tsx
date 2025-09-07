@@ -228,12 +228,15 @@ export default function HomePage() {
 
             const items = event.clipboardData.items;
             let imageFound = false;
+            let pastedCount = 0;
+            
             for (let i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf('image') !== -1) {
                     const file = items[i].getAsFile();
-                    if (file) {
+                    if (file && pastedCount < (MAX_EDIT_IMAGES - editImageFiles.length)) {
                         event.preventDefault();
                         imageFound = true;
+                        pastedCount++;
 
                         const previewUrl = URL.createObjectURL(file);
 
@@ -241,20 +244,24 @@ export default function HomePage() {
                         setEditSourceImagePreviewUrls((prevUrls) => [...prevUrls, previewUrl]);
 
                         console.log('Pasted image added:', file.name);
-
-                        break;
                     }
                 }
             }
-            if (!imageFound) {
+            
+            if (imageFound) {
+                console.log(`Successfully pasted ${pastedCount} image(s) via Ctrl+V`);
+            } else {
                 console.log('Paste event did not contain a recognized image file.');
             }
         };
 
+        // Adiciona o listener tanto na window quanto no document para melhor compatibilidade
         window.addEventListener('paste', handlePaste);
+        document.addEventListener('paste', handlePaste);
 
         return () => {
             window.removeEventListener('paste', handlePaste);
+            document.removeEventListener('paste', handlePaste);
         };
     }, [mode, editImageFiles.length]);
 
