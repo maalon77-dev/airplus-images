@@ -865,64 +865,64 @@ export default function HomePage() {
                     
                     <TabsContent value="generate" className="space-y-6">
                         <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-                    <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
-                        <div className={mode === 'generate' ? 'block h-full w-full' : 'hidden'}>
-                            <GenerationForm
-                                onSubmit={handleApiCall}
-                                isLoading={isLoading}
-                                currentMode={mode}
-                                onModeChange={setMode}
-                                isPasswordRequiredByBackend={isPasswordRequiredByBackend}
-                                clientPasswordHash={clientPasswordHash}
-                                onOpenPasswordDialog={handleOpenPasswordDialog}
-                                prompt={genPrompt}
-                                setPrompt={setGenPrompt}
-                                n={genN}
-                                setN={setGenN}
-                                size={genSize}
-                                setSize={setGenSize}
-                                quality={genQuality}
-                                setQuality={setGenQuality}
-                                outputFormat={genOutputFormat}
-                                setOutputFormat={setGenOutputFormat}
-                                compression={genCompression}
-                                setCompression={setGenCompression}
-                                background={genBackground}
-                                setBackground={setGenBackground}
-                                moderation={genModeration}
-                                setModeration={setGenModeration}
-                            />
-                        </div>
-                        <div className={mode === 'edit' ? 'block h-full w-full' : 'hidden'}>
-                            <EditingForm
-                                onSubmit={handleApiCall}
-                                isLoading={isLoading || isSendingToEdit}
-                                currentMode={mode}
-                                onModeChange={setMode}
-                                isPasswordRequiredByBackend={isPasswordRequiredByBackend}
-                                clientPasswordHash={clientPasswordHash}
-                                onOpenPasswordDialog={handleOpenPasswordDialog}
-                                imageFiles={editImageFiles}
-                                sourceImagePreviewUrls={editSourceImagePreviewUrls}
-                                setImageFiles={setEditImageFiles}
-                                setSourceImagePreviewUrls={setEditSourceImagePreviewUrls}
-                                maxImages={MAX_EDIT_IMAGES}
-                                editPrompt={editPrompt}
-                                setEditPrompt={setEditPrompt}
-                                editN={editN}
-                                setEditN={setEditN}
-                                editSize={editSize}
-                                setEditSize={setEditSize}
-                                editQuality={editQuality}
-                                setEditQuality={setEditQuality}
-                                editBrushSize={editBrushSize}
-                                setEditBrushSize={setEditBrushSize}
-                                editShowMaskEditor={editShowMaskEditor}
-                                setEditShowMaskEditor={setEditShowMaskEditor}
-                                editGeneratedMaskFile={editGeneratedMaskFile}
-                                setEditGeneratedMaskFile={setEditGeneratedMaskFile}
-                                editIsMaskSaved={editIsMaskSaved}
-                                setEditIsMaskSaved={setEditIsMaskSaved}
+                            <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
+                                <div className={mode === 'generate' ? 'block h-full w-full' : 'hidden'}>
+                                    <GenerationForm
+                                        onSubmit={handleApiCall}
+                                        isLoading={isLoading}
+                                        currentMode={mode}
+                                        onModeChange={setMode}
+                                        isPasswordRequiredByBackend={isPasswordRequiredByBackend}
+                                        clientPasswordHash={clientPasswordHash}
+                                        onOpenPasswordDialog={handleOpenPasswordDialog}
+                                        prompt={genPrompt}
+                                        setPrompt={setGenPrompt}
+                                        n={genN}
+                                        setN={setGenN}
+                                        size={genSize}
+                                        setSize={setGenSize}
+                                        quality={genQuality}
+                                        setQuality={setGenQuality}
+                                        outputFormat={genOutputFormat}
+                                        setOutputFormat={setGenOutputFormat}
+                                        compression={genCompression}
+                                        setCompression={setGenCompression}
+                                        background={genBackground}
+                                        setBackground={setGenBackground}
+                                        moderation={genModeration}
+                                        setModeration={setGenModeration}
+                                    />
+                                </div>
+                                <div className={mode === 'edit' ? 'block h-full w-full' : 'hidden'}>
+                                    <EditingForm
+                                        onSubmit={handleApiCall}
+                                        isLoading={isLoading || isSendingToEdit}
+                                        currentMode={mode}
+                                        onModeChange={setMode}
+                                        isPasswordRequiredByBackend={isPasswordRequiredByBackend}
+                                        clientPasswordHash={clientPasswordHash}
+                                        onOpenPasswordDialog={handleOpenPasswordDialog}
+                                        imageFiles={editImageFiles}
+                                        sourceImagePreviewUrls={editSourceImagePreviewUrls}
+                                        setImageFiles={setEditImageFiles}
+                                        setSourceImagePreviewUrls={setEditSourceImagePreviewUrls}
+                                        maxImages={MAX_EDIT_IMAGES}
+                                        editPrompt={editPrompt}
+                                        setEditPrompt={setEditPrompt}
+                                        editN={editN}
+                                        setEditN={setEditN}
+                                        editSize={editSize}
+                                        setEditSize={setEditSize}
+                                        editQuality={editQuality}
+                                        setEditQuality={setEditQuality}
+                                        editBrushSize={editBrushSize}
+                                        setEditBrushSize={setEditBrushSize}
+                                        editShowMaskEditor={editShowMaskEditor}
+                                        setEditShowMaskEditor={setEditShowMaskEditor}
+                                        editGeneratedMaskFile={editGeneratedMaskFile}
+                                        setEditGeneratedMaskFile={setEditGeneratedMaskFile}
+                                        editIsMaskSaved={editIsMaskSaved}
+                                        setEditIsMaskSaved={setEditIsMaskSaved}
                                 editOriginalImageSize={editOriginalImageSize}
                                 setEditOriginalImageSize={setEditOriginalImageSize}
                                 editDrawnPoints={editDrawnPoints}
