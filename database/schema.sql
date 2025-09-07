@@ -1,8 +1,8 @@
 -- Schema do banco de dados MySQL para o sistema de geração de imagens
 -- Execute este script no seu banco MySQL
 
-CREATE DATABASE IF NOT EXISTS gpt_images_db;
-USE gpt_images_db;
+CREATE DATABASE IF NOT EXISTS criargptimgs;
+USE criargptimgs;
 
 -- Tabela para armazenar as imagens geradas
 CREATE TABLE IF NOT EXISTS images (

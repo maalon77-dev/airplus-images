@@ -2,15 +2,15 @@
 // Configure estas variáveis de ambiente no seu provedor de hospedagem
 
 export const mysqlConfig = {
-    host: process.env.MYSQL_HOST || 'localhost',
+    host: process.env.MYSQL_HOST || 'criargptimgs.mysql.dbaas.com.br',
     port: parseInt(process.env.MYSQL_PORT || '3306'),
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DATABASE || 'gpt_images_db',
+    user: process.env.MYSQL_USER || 'criargptimgs',
+    password: process.env.MYSQL_PASSWORD || 'vida1503A@',
+    database: process.env.MYSQL_DATABASE || 'criargptimgs',
     connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT || '10'),
     acquireTimeout: parseInt(process.env.MYSQL_ACQUIRE_TIMEOUT || '60000'),
     timeout: parseInt(process.env.MYSQL_TIMEOUT || '60000'),
-    ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : false
+    ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : true
 };
 
 // Para hospedagem compartilhada, você pode precisar ajustar estas configurações

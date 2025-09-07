@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "db:init": "node scripts/init-database.js",
+    "db:create": "node scripts/create-tables.js",
+    "db:test": "node scripts/test-connection.js",
+    "db:setup": "npm run db:create && npm run db:test"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",
