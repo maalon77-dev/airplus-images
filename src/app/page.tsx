@@ -222,7 +222,7 @@ export default function HomePage() {
             }
 
             if (editImageFiles.length >= MAX_EDIT_IMAGES) {
-                alert(`Cannot paste: Maximum of ${MAX_EDIT_IMAGES} images reached.`);
+                alert(`Não é possível colar: Máximo de ${MAX_EDIT_IMAGES} imagens atingido.`);
                 return;
             }
 
@@ -249,9 +249,9 @@ export default function HomePage() {
             }
             
             if (imageFound) {
-                console.log(`Successfully pasted ${pastedCount} image(s) via Ctrl+V`);
+                console.log(`Imagem(ns) colada(s) com sucesso via Ctrl+V: ${pastedCount}`);
             } else {
-                console.log('Paste event did not contain a recognized image file.');
+                console.log('O evento de colar não continha um arquivo de imagem reconhecido.');
             }
         };
 
@@ -276,7 +276,7 @@ export default function HomePage() {
 
     const handleSavePassword = async (password: string) => {
         if (!password.trim()) {
-            setError('Password cannot be empty.');
+            setError('A senha não pode estar vazia.');
             return;
         }
         try {
@@ -291,7 +291,7 @@ export default function HomePage() {
             }
         } catch (e) {
             console.error('Error hashing password:', e);
-            setError('Failed to save password due to a hashing error.');
+            setError('Falha ao salvar senha devido a um erro de hash.');
         }
     };
 
@@ -320,7 +320,7 @@ export default function HomePage() {
         if (isPasswordRequiredByBackend && clientPasswordHash) {
             apiFormData.append('passwordHash', clientPasswordHash);
         } else if (isPasswordRequiredByBackend && !clientPasswordHash) {
-            setError('Password is required. Please configure the password by clicking the lock icon.');
+            setError('Senha é obrigatória. Por favor, configure a senha clicando no ícone de cadeado.');
             setPasswordDialogContext('initial');
             setIsPasswordDialogOpen(true);
             setIsLoading(false);
@@ -369,7 +369,7 @@ export default function HomePage() {
 
             if (!response.ok) {
                 if (response.status === 401 && isPasswordRequiredByBackend) {
-                    setError('Unauthorized: Invalid or missing password. Please try again.');
+                    setError('Não autorizado: Senha inválida ou ausente. Por favor, tente novamente.');
                     setPasswordDialogContext('retry');
                     setLastApiCallArgs([formData]);
                     setIsPasswordDialogOpen(true);
@@ -574,7 +574,7 @@ export default function HomePage() {
         }
 
         if (mode === 'edit' && editImageFiles.length >= MAX_EDIT_IMAGES) {
-            setError(`Cannot add more than ${MAX_EDIT_IMAGES} images to the edit form.`);
+            setError(`Não é possível adicionar mais de ${MAX_EDIT_IMAGES} imagens ao formulário de edição.`);
             setIsSendingToEdit(false);
             return;
         }
@@ -710,11 +710,11 @@ export default function HomePage() {
                 isOpen={isPasswordDialogOpen}
                 onOpenChange={setIsPasswordDialogOpen}
                 onSave={handleSavePassword}
-                title={passwordDialogContext === 'retry' ? 'Password Required' : 'Configure Password'}
+                title={passwordDialogContext === 'retry' ? 'Senha Obrigatória' : 'Configurar Senha'}
                 description={
                     passwordDialogContext === 'retry'
-                        ? 'The server requires a password, or the previous one was incorrect. Please enter it to continue.'
-                        : 'Set a password to use for API requests.'
+                        ? 'O servidor requer uma senha, ou a anterior estava incorreta. Por favor, digite-a para continuar.'
+                        : 'Defina uma senha para usar nas requisições da API.'
                 }
             />
             <div className='w-full max-w-7xl space-y-6'>

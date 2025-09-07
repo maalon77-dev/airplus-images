@@ -136,20 +136,20 @@ export function GenerationForm({
             <CardHeader className='flex items-start justify-between border-b border-white/10 pb-4'>
                 <div>
                     <div className='flex items-center'>
-                        <CardTitle className='py-1 text-lg font-medium text-white'>Generate Image</CardTitle>
+                        <CardTitle className='py-1 text-lg font-medium text-white'>Gerar Imagem</CardTitle>
                         {isPasswordRequiredByBackend && (
                             <Button
                                 variant='ghost'
                                 size='icon'
                                 onClick={onOpenPasswordDialog}
                                 className='ml-2 text-white/60 hover:text-white'
-                                aria-label='Configure Password'>
+                                aria-label='Configurar Senha'>
                                 {clientPasswordHash ? <Lock className='h-4 w-4' /> : <LockOpen className='h-4 w-4' />}
                             </Button>
                         )}
                     </div>
                     <CardDescription className='mt-1 text-white/60'>
-                        Create a new image from a text prompt using gpt-image-1.
+                        Crie uma nova imagem a partir de um prompt de texto usando gpt-image-1.
                     </CardDescription>
                 </div>
                 <ModeToggle currentMode={currentMode} onModeChange={onModeChange} />
@@ -162,7 +162,7 @@ export function GenerationForm({
                         </Label>
                         <Textarea
                             id='prompt'
-                            placeholder='e.g., A photorealistic cat astronaut floating in space'
+                            placeholder='ex: Um gato astronauta fotorealístico flutuando no espaço'
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                             required
@@ -173,7 +173,7 @@ export function GenerationForm({
 
                     <div className='space-y-2'>
                         <Label htmlFor='n-slider' className='text-white'>
-                            Number of Images: {n[0]}
+                            Número de Imagens: {n[0]}
                         </Label>
                         <Slider
                             id='n-slider'
@@ -188,63 +188,63 @@ export function GenerationForm({
                     </div>
 
                     <div className='space-y-3'>
-                        <Label className='block text-white'>Size</Label>
+                        <Label className='block text-white'>Tamanho</Label>
                         <RadioGroup
                             value={size}
                             onValueChange={(value) => setSize(value as GenerationFormData['size'])}
                             disabled={isLoading}
                             className='flex flex-wrap gap-x-5 gap-y-3'>
-                            <RadioItemWithIcon value='auto' id='size-auto' label='Auto' Icon={Sparkles} />
-                            <RadioItemWithIcon value='1024x1024' id='size-square' label='Square' Icon={Square} />
+                            <RadioItemWithIcon value='auto' id='size-auto' label='Automático' Icon={Sparkles} />
+                            <RadioItemWithIcon value='1024x1024' id='size-square' label='Quadrado' Icon={Square} />
                             <RadioItemWithIcon
                                 value='1536x1024'
                                 id='size-landscape'
-                                label='Landscape'
+                                label='Paisagem'
                                 Icon={RectangleHorizontal}
                             />
                             <RadioItemWithIcon
                                 value='1024x1536'
                                 id='size-portrait'
-                                label='Portrait'
+                                label='Retrato'
                                 Icon={RectangleVertical}
                             />
                         </RadioGroup>
                     </div>
 
                     <div className='space-y-3'>
-                        <Label className='block text-white'>Quality</Label>
+                        <Label className='block text-white'>Qualidade</Label>
                         <RadioGroup
                             value={quality}
                             onValueChange={(value) => setQuality(value as GenerationFormData['quality'])}
                             disabled={isLoading}
                             className='flex flex-wrap gap-x-5 gap-y-3'>
-                            <RadioItemWithIcon value='auto' id='quality-auto' label='Auto' Icon={Sparkles} />
-                            <RadioItemWithIcon value='low' id='quality-low' label='Low' Icon={Tally1} />
-                            <RadioItemWithIcon value='medium' id='quality-medium' label='Medium' Icon={Tally2} />
-                            <RadioItemWithIcon value='high' id='quality-high' label='High' Icon={Tally3} />
+                            <RadioItemWithIcon value='auto' id='quality-auto' label='Automático' Icon={Sparkles} />
+                            <RadioItemWithIcon value='low' id='quality-low' label='Baixa' Icon={Tally1} />
+                            <RadioItemWithIcon value='medium' id='quality-medium' label='Média' Icon={Tally2} />
+                            <RadioItemWithIcon value='high' id='quality-high' label='Alta' Icon={Tally3} />
                         </RadioGroup>
                     </div>
 
                     <div className='space-y-3'>
-                        <Label className='block text-white'>Background</Label>
+                        <Label className='block text-white'>Fundo</Label>
                         <RadioGroup
                             value={background}
                             onValueChange={(value) => setBackground(value as GenerationFormData['background'])}
                             disabled={isLoading}
                             className='flex flex-wrap gap-x-5 gap-y-3'>
-                            <RadioItemWithIcon value='auto' id='bg-auto' label='Auto' Icon={Sparkles} />
-                            <RadioItemWithIcon value='opaque' id='bg-opaque' label='Opaque' Icon={BrickWall} />
+                            <RadioItemWithIcon value='auto' id='bg-auto' label='Automático' Icon={Sparkles} />
+                            <RadioItemWithIcon value='opaque' id='bg-opaque' label='Opaco' Icon={BrickWall} />
                             <RadioItemWithIcon
                                 value='transparent'
                                 id='bg-transparent'
-                                label='Transparent'
+                                label='Transparente'
                                 Icon={Eraser}
                             />
                         </RadioGroup>
                     </div>
 
                     <div className='space-y-3'>
-                        <Label className='block text-white'>Output Format</Label>
+                        <Label className='block text-white'>Formato de Saída</Label>
                         <RadioGroup
                             value={outputFormat}
                             onValueChange={(value) => setOutputFormat(value as GenerationFormData['output_format'])}
@@ -259,7 +259,7 @@ export function GenerationForm({
                     {showCompression && (
                         <div className='space-y-2 pt-2 transition-opacity duration-300'>
                             <Label htmlFor='compression-slider' className='text-white'>
-                                Compression: {compression[0]}%
+                                Compressão: {compression[0]}%
                             </Label>
                             <Slider
                                 id='compression-slider'
@@ -275,14 +275,14 @@ export function GenerationForm({
                     )}
 
                     <div className='space-y-3'>
-                        <Label className='block text-white'>Moderation Level</Label>
+                        <Label className='block text-white'>Nível de Moderação</Label>
                         <RadioGroup
                             value={moderation}
                             onValueChange={(value) => setModeration(value as GenerationFormData['moderation'])}
                             disabled={isLoading}
                             className='flex flex-wrap gap-x-5 gap-y-3'>
-                            <RadioItemWithIcon value='auto' id='mod-auto' label='Auto' Icon={ShieldCheck} />
-                            <RadioItemWithIcon value='low' id='mod-low' label='Low' Icon={ShieldAlert} />
+                            <RadioItemWithIcon value='auto' id='mod-auto' label='Automático' Icon={ShieldCheck} />
+                            <RadioItemWithIcon value='low' id='mod-low' label='Baixo' Icon={ShieldAlert} />
                         </RadioGroup>
                     </div>
                 </CardContent>
@@ -292,7 +292,7 @@ export function GenerationForm({
                         disabled={isLoading || !prompt}
                         className='flex w-full items-center justify-center gap-2 rounded-md bg-white text-black hover:bg-white/90 disabled:bg-white/10 disabled:text-white/40'>
                         {isLoading && <Loader2 className='h-4 w-4 animate-spin' />}
-                        {isLoading ? 'Generating...' : 'Generate'}
+                        {isLoading ? 'Gerando...' : 'Gerar'}
                     </Button>
                 </CardFooter>
             </form>

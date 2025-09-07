@@ -102,42 +102,42 @@ export function HistoryPanel({
         <Card className='flex h-full w-full flex-col overflow-hidden rounded-lg border border-white/10 bg-black'>
             <CardHeader className='flex flex-row items-center justify-between gap-4 border-b border-white/10 px-4 py-3'>
                 <div className='flex items-center gap-2'>
-                    <CardTitle className='text-lg font-medium text-white'>History</CardTitle>
+                    <CardTitle className='text-lg font-medium text-white'>Histórico</CardTitle>
                     {totalCost > 0 && (
                         <Dialog open={isTotalCostDialogOpen} onOpenChange={setIsTotalCostDialogOpen}>
                             <DialogTrigger asChild>
                                 <button
                                     className='mt-0.5 flex items-center gap-1 rounded-full bg-green-600/80 px-1.5 py-0.5 text-[12px] text-white transition-colors hover:bg-green-500/90'
-                                    aria-label='Show total cost summary'>
-                                    Total Cost: ${totalCost.toFixed(4)}
+                                    aria-label='Mostrar resumo do custo total'>
+                                    Custo Total: ${totalCost.toFixed(4)}
                                 </button>
                             </DialogTrigger>
                             <DialogContent className='border-neutral-700 bg-neutral-900 text-white sm:max-w-[450px]'>
                                 <DialogHeader>
-                                    <DialogTitle className='text-white'>Total Cost Summary</DialogTitle>
+                                    <DialogTitle className='text-white'>Resumo do Custo Total</DialogTitle>
                                     {/* Add sr-only description for accessibility */}
                                     <DialogDescription className='sr-only'>
-                                        A summary of the total estimated cost for all generated images in the history.
+                                        Um resumo do custo total estimado para todas as imagens geradas no histórico.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className='space-y-1 pt-1 text-xs text-neutral-400'>
-                                    <p>Pricing for gpt-image-1:</p>
+                                    <p>Preços para gpt-image-1:</p>
                                     <ul className='list-disc pl-4'>
-                                        <li>Text Input: $5 / 1M tokens</li>
-                                        <li>Image Input: $10 / 1M tokens</li>
-                                        <li>Image Output: $40 / 1M tokens</li>
+                                        <li>Entrada de Texto: $5 / 1M tokens</li>
+                                        <li>Entrada de Imagem: $10 / 1M tokens</li>
+                                        <li>Saída de Imagem: $40 / 1M tokens</li>
                                     </ul>
                                 </div>
                                 <div className='space-y-2 py-4 text-sm text-neutral-300'>
                                     <div className='flex justify-between'>
-                                        <span>Total Images Generated:</span> <span>{totalImages.toLocaleString()}</span>
+                                        <span>Total de Imagens Geradas:</span> <span>{totalImages.toLocaleString()}</span>
                                     </div>
                                     <div className='flex justify-between'>
-                                        <span>Average Cost Per Image:</span> <span>${averageCost.toFixed(4)}</span>
+                                        <span>Custo Médio por Imagem:</span> <span>${averageCost.toFixed(4)}</span>
                                     </div>
                                     <hr className='my-2 border-neutral-700' />
                                     <div className='flex justify-between font-medium text-white'>
-                                        <span>Total Estimated Cost:</span>
+                                        <span>Custo Total Estimado:</span>
                                         <span>${totalCost.toFixed(4)}</span>
                                     </div>
                                 </div>
@@ -148,7 +148,7 @@ export function HistoryPanel({
                                             variant='secondary'
                                             size='sm'
                                             className='bg-neutral-700 text-neutral-200 hover:bg-neutral-600'>
-                                            Close
+                                            Fechar
                                         </Button>
                                     </DialogClose>
                                 </DialogFooter>
@@ -162,14 +162,14 @@ export function HistoryPanel({
                         size='sm'
                         onClick={onClearHistory}
                         className='h-auto rounded-md px-2 py-1 text-white/60 hover:bg-white/10 hover:text-white'>
-                        Clear
+                        Limpar
                     </Button>
                 )}
             </CardHeader>
             <CardContent className='flex-grow overflow-y-auto p-4'>
                 {history.length === 0 ? (
                     <div className='flex h-full items-center justify-center text-white/40'>
-                        <p>Generated images will appear here.</p>
+                        <p>As imagens geradas aparecerão aqui.</p>
                     </div>
                 ) : (
                     <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
@@ -221,7 +221,7 @@ export function HistoryPanel({
                                                 ) : (
                                                     <SparklesIcon size={12} />
                                                 )}
-                                                {item.mode === 'edit' ? 'Edit' : 'Create'}
+                                                {item.mode === 'edit' ? 'Editar' : 'Criar'}
                                             </div>
                                             {isMultiImage && (
                                                 <div className='pointer-events-none absolute right-1 bottom-1 z-10 flex items-center gap-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[12px] text-white'>
@@ -257,24 +257,24 @@ export function HistoryPanel({
                                                             setOpenCostDialogTimestamp(itemKey);
                                                         }}
                                                         className='absolute top-1 right-1 z-20 flex items-center gap-0.5 rounded-full bg-green-600/80 px-1.5 py-0.5 text-[11px] text-white transition-colors hover:bg-green-500/90'
-                                                        aria-label='Show cost breakdown'>
+                                                        aria-label='Mostrar detalhamento do custo'>
                                                         <DollarSign size={12} />
                                                         {item.costDetails.estimated_cost_usd.toFixed(4)}
                                                     </button>
                                                 </DialogTrigger>
                                                 <DialogContent className='border-neutral-700 bg-neutral-900 text-white sm:max-w-[450px]'>
                                                     <DialogHeader>
-                                                        <DialogTitle className='text-white'>Cost Breakdown</DialogTitle>
+                                                        <DialogTitle className='text-white'>Detalhamento do Custo</DialogTitle>
                                                         <DialogDescription className='sr-only'>
-                                                            Estimated cost breakdown for this image generation.
+                                                            Detalhamento do custo estimado para esta geração de imagem.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <div className='space-y-1 pt-1 text-xs text-neutral-400'>
-                                                        <p>Pricing for gpt-image-1:</p>
+                                                        <p>Preços para gpt-image-1:</p>
                                                         <ul className='list-disc pl-4'>
-                                                            <li>Text Input: $5 / 1M tokens</li>
-                                                            <li>Image Input: $10 / 1M tokens</li>
-                                                            <li>Image Output: $40 / 1M tokens</li>
+                                                            <li>Entrada de Texto: $5 / 1M tokens</li>
+                                                            <li>Entrada de Imagem: $10 / 1M tokens</li>
+                                                            <li>Saída de Imagem: $40 / 1M tokens</li>
                                                         </ul>
                                                     </div>
                                                     <div className='space-y-2 py-4 text-sm text-neutral-300'>
