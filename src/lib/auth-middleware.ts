@@ -20,7 +20,7 @@ export interface AuthenticatedUser {
     last_login: string;
 }
 
-export async function getAuthenticatedUser(request: NextRequest): Promise<AuthenticatedUser | null> {
+export async function getAuthenticatedUser(_request: NextRequest): Promise<AuthenticatedUser | null> {
     try {
         const cookieStore = cookies();
         const sessionToken = cookieStore.get('session_token')?.value;
@@ -96,7 +96,7 @@ export function requireAuth(requiredLevel?: 'admin_supremo' | 'admin' | 'usuario
 
         return {
             success: true,
-            user
+            user: user as AuthenticatedUser
         };
     };
 }

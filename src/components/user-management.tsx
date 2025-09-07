@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Users, Plus, Crown, Shield, UserCheck, Trash2 } from 'lucide-react';
+import { Loader2, Users, Plus, Crown, Shield, UserCheck } from 'lucide-react';
 import * as React from 'react';
 
 interface User {
@@ -59,7 +59,7 @@ export function UserManagement({ currentUser }: UserManagementProps) {
             } else {
                 setError(data.error || 'Erro ao carregar usuários');
             }
-        } catch (err) {
+        } catch {
             setError('Erro de conexão');
         } finally {
             setIsLoading(false);
@@ -89,7 +89,7 @@ export function UserManagement({ currentUser }: UserManagementProps) {
             } else {
                 setError(data.error || 'Erro ao criar usuário');
             }
-        } catch (err) {
+        } catch {
             setError('Erro de conexão');
         } finally {
             setIsCreating(false);

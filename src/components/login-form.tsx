@@ -9,7 +9,7 @@ import { Loader2, Lock, User, Eye, EyeOff } from 'lucide-react';
 import * as React from 'react';
 
 interface LoginFormProps {
-    onLoginSuccess: (user: any) => void;
+    onLoginSuccess: (user: {id: number; username: string; email: string; user_level: string; last_login: string}) => void;
 }
 
 export function LoginForm({ onLoginSuccess }: LoginFormProps) {
@@ -40,7 +40,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
             } else {
                 setError(data.error || 'Erro no login');
             }
-        } catch (err) {
+        } catch {
             setError('Erro de conexão. Tente novamente.');
         } finally {
             setIsLoading(false);
