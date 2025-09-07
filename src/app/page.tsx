@@ -18,7 +18,7 @@ type HistoryImage = {
 export type HistoryMetadata = {
     timestamp: number;
     images: HistoryImage[];
-    storageModeUsed?: 'fs' | 'indexeddb';
+    storageModeUsed?: 'fs' | 'indexeddb' | 'mysql';
     durationMs: number;
     quality: GenerationFormData['quality'];
     background: GenerationFormData['background'];
@@ -42,9 +42,11 @@ const explicitModeClient = process.env.NEXT_PUBLIC_IMAGE_STORAGE_MODE;
 const vercelEnvClient = process.env.NEXT_PUBLIC_VERCEL_ENV;
 const isOnVercelClient = vercelEnvClient === 'production' || vercelEnvClient === 'preview';
 
-let effectiveStorageModeClient: 'fs' | 'indexeddb';
+let effectiveStorageModeClient: 'fs' | 'indexeddb' | 'mysql';
 
-if (explicitModeClient === 'fs') {
+if (explicitModeClient === 'mysql') {
+    effectiveStorageModeClient = 'mysql';
+} else if (explicitModeClient === 'fs') {
     effectiveStorageModeClient = 'fs';
 } else if (explicitModeClient === 'indexeddb') {
     effectiveStorageModeClient = 'indexeddb';
@@ -116,16 +118,19 @@ export default function HomePage() {
                 return blobUrlCache[filename];
             }
 
+            if (effectiveStorageModeClient === 'mysql') {
+                return `/api/mysql-images?filename=${encodeURIComponent(filename)}`;
+            }
+
             const record = allDbImages?.find((img) => img.filename === filename);
             if (record?.blob) {
                 const url = URL.createObjectURL(record.blob);
-
                 return url;
             }
 
             return undefined;
         },
-        [allDbImages, blobUrlCache]
+        [allDbImages, blobUrlCache, effectiveStorageModeClient]
     );
 
     React.useEffect(() => {
@@ -423,7 +428,49 @@ export default function HomePage() {
                 };
 
                 let newImageBatchPromises: Promise<{ path: string; filename: string } | null>[] = [];
-                if (effectiveStorageModeClient === 'indexeddb') {
+                if (effectiveStorageModeClient === 'mysql') {
+                    console.log('Processando imagens para armazenamento MySQL...');
+                    newImageBatchPromises = result.images.map(async (img: ApiImageResponseItem) => {
+                        if (img.b64_json) {
+                            try {
+                                const byteCharacters = atob(img.b64_json);
+                                const byteNumbers = new Array(byteCharacters.length);
+                                for (let i = 0; i < byteCharacters.length; i++) {
+                                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                }
+                                const byteArray = new Uint8Array(byteNumbers);
+
+                                const actualMimeType = getMimeTypeFromFormat(img.output_format);
+                                const blob = new Blob([byteArray], { type: actualMimeType });
+
+                                // Salvar no MySQL via API
+                                const formData = new FormData();
+                                formData.append('image', blob, img.filename);
+                                formData.append('filename', img.filename);
+
+                                const response = await fetch('/api/mysql-images', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+
+                                if (!response.ok) {
+                                    throw new Error('Falha ao salvar imagem no MySQL');
+                                }
+
+                                console.log(`Salvou ${img.filename} no MySQL.`);
+
+                                return { filename: img.filename, path: `/api/mysql-images?filename=${encodeURIComponent(img.filename)}` };
+                            } catch (dbError) {
+                                console.error(`Erro ao salvar ${img.filename} no MySQL:`, dbError);
+                                setError(`Falha ao salvar imagem ${img.filename} no MySQL.`);
+                                return null;
+                            }
+                        } else {
+                            console.warn(`Imagem ${img.filename} sem b64_json no modo MySQL.`);
+                            return null;
+                        }
+                    });
+                } else if (effectiveStorageModeClient === 'indexeddb') {
                     console.log('Processing images for IndexedDB storage...');
                     newImageBatchPromises = result.images.map(async (img: ApiImageResponseItem) => {
                         if (img.b64_json) {
@@ -499,7 +546,9 @@ export default function HomePage() {
 
         const selectedBatchPromises = item.images.map(async (imgInfo) => {
             let path: string | undefined;
-            if (originalStorageMode === 'indexeddb') {
+            if (originalStorageMode === 'mysql') {
+                path = `/api/mysql-images?filename=${encodeURIComponent(imgInfo.filename)}`;
+            } else if (originalStorageMode === 'indexeddb') {
                 path = getImageSrc(imgInfo.filename);
             } else {
                 path = `/api/image/${imgInfo.filename}`;
@@ -534,9 +583,11 @@ export default function HomePage() {
 
     const handleClearHistory = async () => {
         const confirmationMessage =
-            effectiveStorageModeClient === 'indexeddb'
-                ? 'Are you sure you want to clear the entire image history? In IndexedDB mode, this will also permanently delete all stored images. This cannot be undone.'
-                : 'Are you sure you want to clear the entire image history? This cannot be undone.';
+            effectiveStorageModeClient === 'mysql'
+                ? 'Tem certeza de que deseja limpar todo o histórico de imagens? No modo MySQL, isso também excluirá permanentemente todas as imagens armazenadas. Isso não pode ser desfeito.'
+                : effectiveStorageModeClient === 'indexeddb'
+                ? 'Tem certeza de que deseja limpar todo o histórico de imagens? No modo IndexedDB, isso também excluirá permanentemente todas as imagens armazenadas. Isso não pode ser desfeito.'
+                : 'Tem certeza de que deseja limpar todo o histórico de imagens? Isso não pode ser desfeito.';
 
         if (window.confirm(confirmationMessage)) {
             setHistory([]);
@@ -585,7 +636,16 @@ export default function HomePage() {
             let blob: Blob | undefined;
             let mimeType: string = 'image/png';
 
-            if (effectiveStorageModeClient === 'indexeddb') {
+            if (effectiveStorageModeClient === 'mysql') {
+                console.log(`Buscando imagem ${filename} do MySQL...`);
+                const response = await fetch(`/api/mysql-images?filename=${encodeURIComponent(filename)}`);
+                if (!response.ok) {
+                    throw new Error(`Falha ao buscar imagem: ${response.statusText}`);
+                }
+                blob = await response.blob();
+                mimeType = response.headers.get('Content-Type') || mimeType;
+                console.log(`Buscou imagem ${filename} do MySQL.`);
+            } else if (effectiveStorageModeClient === 'indexeddb') {
                 console.log(`Fetching blob ${filename} from IndexedDB...`);
 
                 const record = allDbImages?.find((img) => img.filename === filename);
@@ -642,7 +702,18 @@ export default function HomePage() {
         const filenamesToDelete = imagesInEntry.map((img) => img.filename);
 
         try {
-            if (storageModeUsed === 'indexeddb') {
+            if (storageModeUsed === 'mysql') {
+                console.log('Deletando do MySQL:', filenamesToDelete);
+                for (const filename of filenamesToDelete) {
+                    const response = await fetch(`/api/mysql-images?filename=${encodeURIComponent(filename)}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) {
+                        console.warn(`Falha ao deletar ${filename} do MySQL`);
+                    }
+                }
+                console.log('Deletou com sucesso do MySQL.');
+            } else if (storageModeUsed === 'indexeddb') {
                 console.log('Deleting from IndexedDB:', filenamesToDelete);
                 await db.images.where('filename').anyOf(filenamesToDelete).delete();
                 setBlobUrlCache((prevCache) => {

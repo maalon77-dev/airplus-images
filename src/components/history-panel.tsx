@@ -233,10 +233,12 @@ export function HistoryPanel({
                                                 <div className='flex items-center gap-1 rounded-full border border-white/10 bg-neutral-900/80 px-1 py-0.5 text-[11px] text-white/70'>
                                                     {originalStorageMode === 'fs' ? (
                                                         <HardDrive size={12} className='text-neutral-400' />
+                                                    ) : originalStorageMode === 'mysql' ? (
+                                                        <Database size={12} className='text-green-400' />
                                                     ) : (
                                                         <Database size={12} className='text-blue-400' />
                                                     )}
-                                                    <span>{originalStorageMode === 'fs' ? 'file' : 'db'}</span>
+                                                    <span>{originalStorageMode === 'fs' ? 'file' : originalStorageMode === 'mysql' ? 'mysql' : 'db'}</span>
                                                 </div>
                                                 {item.output_format && (
                                                     <div className='flex items-center gap-1 rounded-full border border-white/10 bg-neutral-900/80 px-1 py-0.5 text-[11px] text-white/70'>
