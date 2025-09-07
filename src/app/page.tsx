@@ -5,7 +5,11 @@ import { GenerationForm, type GenerationFormData } from '@/components/generation
 import { HistoryPanel } from '@/components/history-panel';
 import { ImageOutput } from '@/components/image-output';
 import { PasswordDialog } from '@/components/password-dialog';
+import { LoginForm } from '@/components/login-form';
+import { UserHeader } from '@/components/user-header';
+import { UserManagement } from '@/components/user-management';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateApiCost, type CostDetails } from '@/lib/cost-utils';
 import { db, type ImageRecord } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -67,6 +71,9 @@ type ApiImageResponseItem = {
 };
 
 export default function HomePage() {
+    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<any>(null);
+    const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
     const [mode, setMode] = React.useState<'generate' | 'edit'>('generate');
     const [isPasswordRequiredByBackend, setIsPasswordRequiredByBackend] = React.useState<boolean | null>(null);
     const [clientPasswordHash, setClientPasswordHash] = React.useState<string | null>(null);
@@ -169,6 +176,28 @@ export default function HomePage() {
         setIsInitialLoad(false);
     }, []);
 
+    // Verificar autenticação ao carregar a página
+    React.useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        setCurrentUser(data.user);
+                        setIsAuthenticated(true);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar autenticação:', error);
+            } finally {
+                setIsCheckingAuth(false);
+            }
+        };
+
+        checkAuth();
+    }, []);
+
     React.useEffect(() => {
         const fetchAuthStatus = async () => {
             try {
@@ -190,6 +219,19 @@ export default function HomePage() {
             setClientPasswordHash(storedHash);
         }
     }, []);
+
+    const handleLoginSuccess = (user: any) => {
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+    };
+
+    const handleLogout = () => {
+        setCurrentUser(null);
+        setIsAuthenticated(false);
+        setHistory([]);
+        setLatestImageBatch(null);
+        setError(null);
+    };
 
     React.useEffect(() => {
         if (!isInitialLoad) {
@@ -775,21 +817,54 @@ export default function HomePage() {
         setItemToDeleteConfirm(null);
     };
 
+    // Mostrar tela de carregamento enquanto verifica autenticação
+    if (isCheckingAuth) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-white">Verificando autenticação...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Mostrar tela de login se não estiver autenticado
+    if (!isAuthenticated) {
+        return <LoginForm onLoginSuccess={handleLoginSuccess} />;
+    }
+
     return (
-        <main className='flex min-h-screen flex-col items-center bg-black p-4 text-white md:p-8 lg:p-12'>
-            <PasswordDialog
-                isOpen={isPasswordDialogOpen}
-                onOpenChange={setIsPasswordDialogOpen}
-                onSave={handleSavePassword}
-                title={passwordDialogContext === 'retry' ? 'Senha Obrigatória' : 'Configurar Senha'}
-                description={
-                    passwordDialogContext === 'retry'
-                        ? 'O servidor requer uma senha, ou a anterior estava incorreta. Por favor, digite-a para continuar.'
-                        : 'Defina uma senha para usar nas requisições da API.'
-                }
-            />
-            <div className='w-full max-w-7xl space-y-6'>
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+        <main className='flex min-h-screen flex-col bg-black text-white'>
+            <UserHeader user={currentUser} onLogout={handleLogout} />
+            <div className='flex-1 p-4 md:p-8 lg:p-12'>
+                <PasswordDialog
+                    isOpen={isPasswordDialogOpen}
+                    onOpenChange={setIsPasswordDialogOpen}
+                    onSave={handleSavePassword}
+                    title={passwordDialogContext === 'retry' ? 'Senha Obrigatória' : 'Configurar Senha'}
+                    description={
+                        passwordDialogContext === 'retry'
+                            ? 'O servidor requer uma senha, ou a anterior estava incorreta. Por favor, digite-a para continuar.'
+                            : 'Defina uma senha para usar nas requisições da API.'
+                    }
+                />
+                <div className='w-full max-w-7xl mx-auto space-y-6'>
+                <Tabs defaultValue="generate" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3 bg-white/10 border-white/20">
+                        <TabsTrigger value="generate" className="data-[state=active]:bg-white data-[state=active]:text-black">
+                            Gerar Imagens
+                        </TabsTrigger>
+                        <TabsTrigger value="edit" className="data-[state=active]:bg-white data-[state=active]:text-black">
+                            Editar Imagens
+                        </TabsTrigger>
+                        <TabsTrigger value="users" className="data-[state=active]:bg-white data-[state=active]:text-black">
+                            Usuários
+                        </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="generate" className="space-y-6">
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
                     <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
                         <div className={mode === 'generate' ? 'block h-full w-full' : 'hidden'}>
                             <GenerationForm
@@ -890,6 +965,12 @@ export default function HomePage() {
                         deletePreferenceDialogValue={dialogCheckboxStateSkipConfirm}
                         onDeletePreferenceDialogChange={setDialogCheckboxStateSkipConfirm}
                     />
+                </div>
+
+                <TabsContent value="users" className="space-y-6">
+                    <UserManagement currentUser={currentUser} />
+                </TabsContent>
+                </Tabs>
                 </div>
             </div>
         </main>
