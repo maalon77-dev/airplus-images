@@ -136,6 +136,7 @@ export function GenerationForm({
             <CardHeader className='flex items-start justify-between border-b border-white/10 pb-4'>
                 <div>
                     <div className='flex items-center'>
+                        {/* Sistema traduzido para português */}
                         <CardTitle className='py-1 text-lg font-medium text-white'>Gerar Imagem</CardTitle>
                         {isPasswordRequiredByBackend && (
                             <Button
