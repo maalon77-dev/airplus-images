@@ -37,7 +37,7 @@ async function handleGetHistory(request: NextRequest, user: { id: number; userna
 export const GET = requireAuth(handleGetHistory);
 
 // POST - Salvar histórico no MySQL
-export async function POST(request: NextRequest) {
+async function handlePostHistory(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     try {
         const body = await request.json();
         const {
@@ -80,8 +80,9 @@ export async function POST(request: NextRequest) {
             cost_brl: cost_brl || 0,
             text_input_tokens: text_input_tokens || 0,
             image_input_tokens: image_input_tokens || 0,
-            image_output_tokens: image_output_tokens || 0
-        });
+            image_output_tokens: image_output_tokens || 0,
+            user_id: user.id
+        }, user.id);
 
         // Relacionar imagens com o histórico
         if (image_filenames && Array.isArray(image_filenames)) {
@@ -104,6 +105,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
     }
 }
+
+export const POST = requireAuth(handlePostHistory);
 
 // DELETE - Deletar item do histórico
 export async function DELETE(request: NextRequest) {
