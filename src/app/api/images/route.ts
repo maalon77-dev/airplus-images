@@ -5,6 +5,7 @@ import OpenAI from 'openai';
 import path from 'path';
 import MySQLDatabase from '@/lib/mysql-db';
 import { requireAuth } from '@/lib/auth';
+import { createFTPUploadService } from '@/lib/ftp-upload';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
@@ -78,7 +79,7 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
         return NextResponse.json({ error: 'Server configuration error: API key not found.' }, { status: 500 });
     }
     try {
-        let effectiveStorageMode: 'fs' | 'indexeddb' | 'mysql';
+        let effectiveStorageMode: 'fs' | 'indexeddb' | 'mysql' | 'ftp';
         const explicitMode = process.env.NEXT_PUBLIC_IMAGE_STORAGE_MODE;
         const isOnVercel = process.env.VERCEL === '1';
 
@@ -88,6 +89,8 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
             effectiveStorageMode = 'fs';
         } else if (explicitMode === 'indexeddb') {
             effectiveStorageMode = 'indexeddb';
+        } else if (explicitMode === 'ftp') {
+            effectiveStorageMode = 'ftp';
         } else if (isOnVercel) {
             effectiveStorageMode = 'indexeddb';
         } else {
@@ -230,6 +233,23 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
                     console.log(`Attempting to save image to MySQL: ${filename}`);
                     const imageId = await MySQLDatabase.saveImage(filename, buffer, mimeType, user.id);
                     console.log(`Successfully saved image to MySQL with ID: ${imageId}`);
+                } else if (effectiveStorageMode === 'ftp') {
+                    console.log(`Attempting to save image to FTP: ${filename}`);
+                    const ftpService = createFTPUploadService();
+                    if (ftpService) {
+                        const publicUrl = await ftpService.uploadImage(buffer, filename);
+                        console.log(`Successfully saved image to FTP: ${publicUrl}`);
+                        
+                        // Salvar também no MySQL para histórico
+                        const mimeType = getMimeTypeFromFormat(fileExtension);
+                        const imageId = await MySQLDatabase.saveImage(filename, buffer, mimeType, user.id);
+                        console.log(`Also saved to MySQL with ID: ${imageId}`);
+                    } else {
+                        console.log('FTP service not configured, falling back to MySQL');
+                        const mimeType = getMimeTypeFromFormat(fileExtension);
+                        const imageId = await MySQLDatabase.saveImage(filename, buffer, mimeType, user.id);
+                        console.log(`Saved to MySQL with ID: ${imageId}`);
+                    }
                 } else {
                     // IndexedDB mode - no server-side saving needed
                 }

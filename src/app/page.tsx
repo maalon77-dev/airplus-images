@@ -50,7 +50,7 @@ const explicitModeClient = process.env.NEXT_PUBLIC_IMAGE_STORAGE_MODE;
 const vercelEnvClient = process.env.NEXT_PUBLIC_VERCEL_ENV;
 const isOnVercelClient = vercelEnvClient === 'production' || vercelEnvClient === 'preview';
 
-let effectiveStorageModeClient: 'fs' | 'indexeddb' | 'mysql';
+let effectiveStorageModeClient: 'fs' | 'indexeddb' | 'mysql' | 'ftp';
 
 // Forçar MySQL para desenvolvimento local quando não estiver no Vercel
 if (explicitModeClient === 'mysql') {
@@ -59,6 +59,8 @@ if (explicitModeClient === 'mysql') {
     effectiveStorageModeClient = 'fs';
 } else if (explicitModeClient === 'indexeddb') {
     effectiveStorageModeClient = 'indexeddb';
+} else if (explicitModeClient === 'ftp') {
+    effectiveStorageModeClient = 'ftp';
 } else if (isOnVercelClient) {
     effectiveStorageModeClient = 'indexeddb';
 } else {
@@ -144,6 +146,12 @@ export default function HomePage() {
             }
 
             if (effectiveStorageModeClient === 'mysql') {
+                return `/api/mysql-images?filename=${encodeURIComponent(filename)}`;
+            }
+
+            if (effectiveStorageModeClient === 'ftp') {
+                // Para FTP, as imagens são servidas diretamente do servidor FTP
+                // A URL será construída baseada na configuração FTP_BASE_URL
                 return `/api/mysql-images?filename=${encodeURIComponent(filename)}`;
             }
 
