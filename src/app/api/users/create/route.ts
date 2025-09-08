@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MySQLDatabase } from '@/lib/mysql-db';
+import { MySQLDatabase, pool } from '@/lib/mysql-db';
 import { requireAdmin } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
@@ -24,7 +24,7 @@ async function handleCreateUser(request: NextRequest, _user: { id: number; usern
         }
 
         // Verificar se o usuário já existe
-        const connection = await MySQLDatabase['pool'].getConnection();
+        const connection = await pool.getConnection();
         let existingUser;
         try {
             const [rows] = await connection.execute(
