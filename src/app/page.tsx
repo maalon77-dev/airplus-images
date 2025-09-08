@@ -239,12 +239,10 @@ export default function HomePage() {
                     console.log('✅ Histórico convertido:', convertedHistory.length, 'itens');
                     console.log('📋 Detalhes do histórico:', convertedHistory);
                     
-                    // FORÇAR ATUALIZAÇÃO DO ESTADO
-                    setHistory([]); // Limpar primeiro
-                    setTimeout(() => {
-                        setHistory(convertedHistory); // Definir novo histórico
-                        console.log('🎯 Histórico FORÇADO no estado:', convertedHistory.length, 'itens');
-                    }, 10);
+                    // FORÇAR ATUALIZAÇÃO DO ESTADO - SEM DELAY
+                    console.log('🎯 Definindo histórico DIRETAMENTE:', convertedHistory.length, 'itens');
+                    setHistory(convertedHistory);
+                    console.log('✅ Histórico definido com sucesso!');
                 } else {
                     console.log('❌ Nenhum histórico encontrado no MySQL');
                     setHistory([]);
@@ -319,13 +317,7 @@ export default function HomePage() {
         loadHistory();
     }, [user, loadMySQLHistory]);
 
-    // Forçar recarregamento do histórico quando o usuário mudar
-    React.useEffect(() => {
-        if (user && !isInitialLoad) {
-            console.log('🔄 Usuário mudou - Recarregando histórico para:', user.username);
-            loadMySQLHistory();
-        }
-    }, [user?.id, user?.username]);
+    // REMOVIDO: useEffect duplicado que causava conflito
 
     React.useEffect(() => {
         const checkAuth = async () => {
