@@ -302,7 +302,6 @@ export default function HomePage() {
         const loadHistory = async () => {
             console.log('🔄 useEffect loadHistory executado');
             console.log('👤 user:', user);
-            console.log('🔄 isInitialLoad:', isInitialLoad);
             
             if (user) {
                 console.log('✅ Usuário logado - Carregando APENAS do MySQL para usuário:', user.username);
@@ -318,6 +317,14 @@ export default function HomePage() {
         
         loadHistory();
     }, [user, loadMySQLHistory]);
+
+    // Forçar recarregamento do histórico quando o usuário mudar
+    React.useEffect(() => {
+        if (user && !isInitialLoad) {
+            console.log('🔄 Usuário mudou - Recarregando histórico para:', user.username);
+            loadMySQLHistory();
+        }
+    }, [user?.id, user?.username]);
 
     React.useEffect(() => {
         const checkAuth = async () => {
