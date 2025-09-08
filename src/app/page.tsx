@@ -101,8 +101,19 @@ export default function HomePage() {
     React.useEffect(() => {
         if (history.length > 0) {
             console.log('📊 Estado do histórico mudou:', history.length, 'itens');
+            
+            // Verificar se há itens antigos do MySQL que não funcionam
+            const hasOldMySQLItems = history.some(item => 
+                item.storageModeUsed === 'mysql' && 
+                item.images.some(img => !img.filename.includes('http') && !img.filename.includes('/api/'))
+            );
+            
+            if (hasOldMySQLItems && effectiveStorageModeClient === 'fs') {
+                console.log('⚠️ Detectados itens antigos do MySQL. Limpando histórico...');
+                setHistory([]);
+            }
         }
-    }, [history]);
+    }, [history, effectiveStorageModeClient]);
     const [isInitialLoad, setIsInitialLoad] = React.useState(true);
     const [blobUrlCache, setBlobUrlCache] = React.useState<Record<string, string>>({});
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
