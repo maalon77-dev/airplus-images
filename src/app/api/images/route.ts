@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import path from 'path';
+import MySQLDatabase from '@/lib/mysql-db';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
@@ -27,6 +28,20 @@ function validateOutputFormat(format: unknown): ValidOutputFormat {
     }
 
     return 'png'; // default fallback
+}
+
+// Get MIME type from format
+function getMimeTypeFromFormat(format: ValidOutputFormat): string {
+    switch (format) {
+        case 'png':
+            return 'image/png';
+        case 'jpeg':
+            return 'image/jpeg';
+        case 'webp':
+            return 'image/webp';
+        default:
+            return 'image/png';
+    }
 }
 
 async function ensureOutputDirExists() {
@@ -62,11 +77,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Server configuration error: API key not found.' }, { status: 500 });
     }
     try {
-        let effectiveStorageMode: 'fs' | 'indexeddb';
+        let effectiveStorageMode: 'fs' | 'indexeddb' | 'mysql';
         const explicitMode = process.env.NEXT_PUBLIC_IMAGE_STORAGE_MODE;
         const isOnVercel = process.env.VERCEL === '1';
 
-        if (explicitMode === 'fs') {
+        if (explicitMode === 'mysql') {
+            effectiveStorageMode = 'mysql';
+        } else if (explicitMode === 'fs') {
             effectiveStorageMode = 'fs';
         } else if (explicitMode === 'indexeddb') {
             effectiveStorageMode = 'indexeddb';
@@ -207,7 +224,13 @@ export async function POST(request: NextRequest) {
                     console.log(`Attempting to save image to: ${filepath}`);
                     await fs.writeFile(filepath, buffer);
                     console.log(`Successfully saved image: ${filename}`);
+                } else if (effectiveStorageMode === 'mysql') {
+                    const mimeType = getMimeTypeFromFormat(fileExtension);
+                    console.log(`Attempting to save image to MySQL: ${filename}`);
+                    const imageId = await MySQLDatabase.saveImage(filename, buffer, mimeType);
+                    console.log(`Successfully saved image to MySQL with ID: ${imageId}`);
                 } else {
+                    // IndexedDB mode - no server-side saving needed
                 }
 
                 const imageResult: { filename: string; b64_json: string; path?: string; output_format: string } = {
