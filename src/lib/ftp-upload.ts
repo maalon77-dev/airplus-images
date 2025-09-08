@@ -21,8 +21,18 @@ export class FTPUploadService {
 
     async uploadImage(imageBuffer: Buffer, filename: string): Promise<string> {
         const client = new Client();
+        const tempFile = path.join(process.cwd(), 'temp', `temp-${filename}`);
         
         try {
+            // Criar diretório temp se não existir
+            const tempDir = path.dirname(tempFile);
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+            }
+
+            // Escrever buffer para arquivo temporário
+            fs.writeFileSync(tempFile, imageBuffer);
+
             // Conectar ao servidor FTP
             await client.access({
                 host: this.config.host,
@@ -36,7 +46,7 @@ export class FTPUploadService {
             await client.ensureDir(this.config.remotePath);
 
             // Upload do arquivo
-            await client.uploadFrom(imageBuffer, path.join(this.config.remotePath, filename));
+            await client.uploadFrom(tempFile, path.join(this.config.remotePath, filename));
 
             // Retornar URL pública da imagem
             const publicUrl = `${this.config.baseUrl}/${filename}`;
@@ -49,6 +59,10 @@ export class FTPUploadService {
             throw new Error(`Falha no upload FTP: ${error}`);
         } finally {
             client.close();
+            // Limpar arquivo temporário
+            if (fs.existsSync(tempFile)) {
+                fs.unlinkSync(tempFile);
+            }
         }
     }
 
