@@ -94,6 +94,12 @@ export default function HomePage() {
     const [latestImageBatch, setLatestImageBatch] = React.useState<{ path: string; filename: string }[] | null>(null);
     const [imageOutputView, setImageOutputView] = React.useState<'grid' | number>('grid');
     const [history, setHistory] = React.useState<HistoryMetadata[]>([]);
+    
+    // Log para monitorar mudanças no estado do histórico
+    React.useEffect(() => {
+        console.log('📊 Estado do histórico mudou:', history.length, 'itens');
+        console.log('📊 Histórico atual:', history);
+    }, [history]);
     const [isInitialLoad, setIsInitialLoad] = React.useState(true);
     const [blobUrlCache, setBlobUrlCache] = React.useState<Record<string, string>>({});
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
