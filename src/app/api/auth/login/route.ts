@@ -16,34 +16,73 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Buscar usuário no banco
-        const connection = await pool.getConnection();
-        let user;
+        // Testar conexão MySQL primeiro
+        let isMySQLAvailable = false;
         try {
-            const [rows] = await connection.execute(
-                'SELECT * FROM users WHERE username = ?',
-                [username]
-            );
-            const users = rows as Array<{ id: number; username: string; password_hash: string; user_level: string }>;
-            user = users.length > 0 ? users[0] : null;
-        } finally {
+            const connection = await pool.getConnection();
+            await connection.ping();
             connection.release();
+            isMySQLAvailable = true;
+        } catch (error) {
+            console.log('⚠️ MySQL não disponível - usando dados mockados para login');
+            isMySQLAvailable = false;
         }
 
-        if (!user) {
-            return NextResponse.json(
-                { error: 'Usuário não encontrado' },
-                { status: 401 }
-            );
-        }
+        let user;
+        
+        if (!isMySQLAvailable) {
+            // Dados mockados para desenvolvimento local
+            const mockUsers = [
+                { id: 4, username: 'admin2', password: 'admin123', user_level: 'ADMIN_SUPREMO' },
+                { id: 15, username: 'jhully', password: 'teste123', user_level: 'USUARIO' },
+                { id: 16, username: 'laura', password: 'teste123', user_level: 'USUARIO' }
+            ];
+            
+            user = mockUsers.find(u => u.username === username);
+            
+            if (!user) {
+                return NextResponse.json(
+                    { error: 'Usuário não encontrado' },
+                    { status: 401 }
+                );
+            }
+            
+            // Verificar senha mockada
+            if (user.password !== password) {
+                return NextResponse.json(
+                    { error: 'Senha incorreta' },
+                    { status: 401 }
+                );
+            }
+        } else {
+            // Buscar usuário no banco
+            const connection = await pool.getConnection();
+            try {
+                const [rows] = await connection.execute(
+                    'SELECT * FROM users WHERE username = ?',
+                    [username]
+                );
+                const users = rows as Array<{ id: number; username: string; password_hash: string; user_level: string }>;
+                user = users.length > 0 ? users[0] : null;
+            } finally {
+                connection.release();
+            }
 
-        // Verificar senha
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-        if (!isValidPassword) {
-            return NextResponse.json(
-                { error: 'Senha incorreta' },
-                { status: 401 }
-            );
+            if (!user) {
+                return NextResponse.json(
+                    { error: 'Usuário não encontrado' },
+                    { status: 401 }
+                );
+            }
+
+            // Verificar senha
+            const isValidPassword = await bcrypt.compare(password, user.password_hash);
+            if (!isValidPassword) {
+                return NextResponse.json(
+                    { error: 'Senha incorreta' },
+                    { status: 401 }
+                );
+            }
         }
 
         // Gerar JWT token
