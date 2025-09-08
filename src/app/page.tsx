@@ -323,7 +323,9 @@ export default function HomePage() {
         const checkAuth = async () => {
             try {
                 console.log('🔐 Verificando autenticação...');
-                const response = await fetch('/api/auth/me');
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include' // Garantir que cookies sejam enviados
+                });
                 console.log('🔐 Response auth status:', response.status, response.ok);
                 
                 if (response.ok) {
