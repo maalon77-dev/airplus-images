@@ -8,8 +8,6 @@ export const mysqlConfig = {
     password: process.env.MYSQL_PASSWORD || 'vida1503A@',
     database: process.env.MYSQL_DATABASE || 'criargptimgs',
     connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT || '10'),
-    acquireTimeout: parseInt(process.env.MYSQL_ACQUIRE_TIMEOUT || '60000'),
-    timeout: parseInt(process.env.MYSQL_TIMEOUT || '60000'),
     ssl: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : true
 };
 

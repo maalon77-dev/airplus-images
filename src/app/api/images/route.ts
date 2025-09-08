@@ -5,7 +5,7 @@ import OpenAI from 'openai';
 import path from 'path';
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
     baseURL: process.env.OPENAI_API_BASE_URL
 });
 
@@ -146,9 +146,6 @@ export async function POST(request: NextRequest) {
             const n = parseInt((formData.get('n') as string) || '1', 10);
             const size = (formData.get('size') as OpenAI.Images.ImageEditParams['size']) || 'auto';
             const quality = (formData.get('quality') as OpenAI.Images.ImageEditParams['quality']) || 'auto';
-            const output_format =
-                (formData.get('output_format') as OpenAI.Images.ImageEditParams['output_format']) || 'webp'; // WebP padrão para edição
-            const output_compression_str = formData.get('output_compression') as string | null;
 
             const imageFiles: File[] = [];
             for (const [key, value] of formData.entries()) {
@@ -169,19 +166,11 @@ export async function POST(request: NextRequest) {
                 image: imageFiles,
                 n: Math.max(1, Math.min(n || 1, 10)),
                 size: size === 'auto' ? undefined : size,
-                quality: quality === 'auto' ? undefined : quality,
-                output_format
+                quality: quality === 'auto' ? undefined : quality
             };
 
             if (maskFile) {
                 params.mask = maskFile;
-            }
-
-            if ((output_format === 'jpeg' || output_format === 'webp') && output_compression_str) {
-                const compression = parseInt(output_compression_str, 10);
-                if (!isNaN(compression) && compression >= 0 && compression <= 100) {
-                    params.output_compression = compression;
-                }
             }
 
             console.log('Calling OpenAI edit with params:', {

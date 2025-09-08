@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import MySQLDatabase from '@/lib/mysql-db';
 
 // GET - Testar conexão com MySQL
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const isConnected = await MySQLDatabase.testConnection();
         

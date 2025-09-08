@@ -7,7 +7,8 @@ const pool = mysql.createPool({
     waitForConnections: true,
     queueLimit: 0,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 0
+    keepAliveInitialDelay: 0,
+    ssl: mysqlConfig.ssl === true ? { rejectUnauthorized: false } : undefined
 });
 
 export interface ImageRecord {
@@ -52,11 +53,11 @@ export class MySQLDatabase {
     static async saveImage(filename: string, imageData: Buffer, mimeType: string): Promise<number> {
         const connection = await pool.getConnection();
         try {
-            const [result] = await connection.execute(
-                'INSERT INTO images (filename, image_data, mime_type, file_size) VALUES (?, ?, ?, ?)',
-                [filename, imageData, mimeType, imageData.length]
-            );
-            return (result as any).insertId;
+        const [result] = await connection.execute(
+            'INSERT INTO images (filename, image_data, mime_type, file_size) VALUES (?, ?, ?, ?)',
+            [filename, imageData, mimeType, imageData.length]
+        );
+        return (result as mysql.ResultSetHeader).insertId;
         } finally {
             connection.release();
         }
@@ -81,19 +82,19 @@ export class MySQLDatabase {
     static async saveGenerationHistory(history: Omit<GenerationHistory, 'id' | 'created_at'>): Promise<number> {
         const connection = await pool.getConnection();
         try {
-            const [result] = await connection.execute(
-                `INSERT INTO generation_history 
-                (timestamp, prompt, mode, quality, background, moderation, output_format, size, n_images, 
-                 duration_ms, cost_usd, cost_brl, text_input_tokens, image_input_tokens, image_output_tokens) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    history.timestamp, history.prompt, history.mode, history.quality, history.background,
-                    history.moderation, history.output_format, history.size, history.n_images,
-                    history.duration_ms, history.cost_usd, history.cost_brl,
-                    history.text_input_tokens, history.image_input_tokens, history.image_output_tokens
-                ]
-            );
-            return (result as any).insertId;
+        const [result] = await connection.execute(
+            `INSERT INTO generation_history 
+            (timestamp, prompt, mode, quality, background, moderation, output_format, size, n_images, 
+             duration_ms, cost_usd, cost_brl, text_input_tokens, image_input_tokens, image_output_tokens) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                history.timestamp, history.prompt, history.mode, history.quality, history.background,
+                history.moderation, history.output_format, history.size, history.n_images,
+                history.duration_ms, history.cost_usd, history.cost_brl,
+                history.text_input_tokens, history.image_input_tokens, history.image_output_tokens
+            ]
+        );
+        return (result as mysql.ResultSetHeader).insertId;
         } finally {
             connection.release();
         }
