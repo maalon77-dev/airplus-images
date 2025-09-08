@@ -279,33 +279,16 @@ export default function HomePage() {
     React.useEffect(() => {
         const loadHistory = async () => {
             console.log('🔄 useEffect loadHistory executado');
-            console.log('📊 effectiveStorageModeClient:', effectiveStorageModeClient);
             console.log('👤 user:', user);
             
-            if (effectiveStorageModeClient === 'mysql' && user) {
-                console.log('✅ Carregando do MySQL para usuário:', user.username);
-                console.log('🔍 Condições atendidas: effectiveStorageModeClient =', effectiveStorageModeClient, 'user =', user);
-                // Carregar do MySQL quando o usuário estiver logado
+            if (user) {
+                console.log('✅ Usuário logado - Carregando APENAS do MySQL para usuário:', user.username);
+                // SEMPRE carregar do MySQL quando o usuário estiver logado
                 await loadMySQLHistory();
             } else {
-                console.log('📁 Carregando do localStorage');
-                console.log('🔍 Condições NÃO atendidas: effectiveStorageModeClient =', effectiveStorageModeClient, 'user =', user);
-                // Carregar do localStorage para outros modos
-                try {
-                    const storedHistory = localStorage.getItem('openaiImageHistory');
-                    if (storedHistory) {
-                        const parsedHistory: HistoryMetadata[] = JSON.parse(storedHistory);
-                        if (Array.isArray(parsedHistory)) {
-                            setHistory(parsedHistory);
-                        } else {
-                            console.warn('Invalid history data found in localStorage.');
-                            localStorage.removeItem('openaiImageHistory');
-                        }
-                    }
-                } catch (e) {
-                    console.error('Failed to load or parse history from localStorage:', e);
-                    localStorage.removeItem('openaiImageHistory');
-                }
+                console.log('❌ Nenhum usuário logado - Limpando histórico');
+                // Limpar histórico quando não há usuário logado
+                setHistory([]);
             }
             setIsInitialLoad(false);
         };
@@ -595,8 +578,9 @@ export default function HomePage() {
                     costDetails: costDetails
                 };
 
-                // Salvar histórico no MySQL se estiver usando modo MySQL
-                if (effectiveStorageModeClient === 'mysql') {
+                // SEMPRE salvar histórico no MySQL quando usuário estiver logado
+                if (user) {
+                    console.log('💾 Salvando histórico no MySQL para usuário:', user.username);
                     await saveMySQLHistory(newHistoryEntry);
                 }
 
@@ -755,12 +739,12 @@ export default function HomePage() {
     };
 
     const handleClearHistory = async () => {
-        const confirmationMessage =
-            effectiveStorageModeClient === 'mysql'
-                ? 'Tem certeza de que deseja limpar todo o histórico de imagens? No modo MySQL, isso também excluirá permanentemente todas as imagens armazenadas. Isso não pode ser desfeito.'
-                : effectiveStorageModeClient === 'indexeddb'
-                ? 'Tem certeza de que deseja limpar todo o histórico de imagens? No modo IndexedDB, isso também excluirá permanentemente todas as imagens armazenadas. Isso não pode ser desfeito.'
-                : 'Tem certeza de que deseja limpar todo o histórico de imagens? Isso não pode ser desfeito.';
+        if (!user) {
+            console.log('❌ Nenhum usuário logado - não é possível limpar histórico');
+            return;
+        }
+
+        const confirmationMessage = 'Tem certeza de que deseja limpar todo o histórico de imagens? No modo MySQL, isso também excluirá permanentemente todas as imagens armazenadas. Isso não pode ser desfeito.';
 
         if (window.confirm(confirmationMessage)) {
             setHistory([]);
@@ -769,20 +753,12 @@ export default function HomePage() {
             setError(null);
 
             try {
-                localStorage.removeItem('openaiImageHistory');
-                console.log('Cleared history metadata from localStorage.');
-
-                if (effectiveStorageModeClient === 'indexeddb') {
-                    await db.images.clear();
-                    console.log('Cleared images from IndexedDB.');
-                    setBlobUrlCache({});
-                } else if (effectiveStorageModeClient === 'mysql') {
-                    // Para MySQL, recarregar o histórico vazio do servidor
-                    await loadMySQLHistory();
-                    console.log('Cleared history from MySQL.');
-                }
+                console.log('🗑️ Limpando histórico do MySQL para usuário:', user.username);
+                // Para MySQL, recarregar o histórico vazio do servidor
+                await loadMySQLHistory();
+                console.log('✅ Histórico limpo do MySQL.');
             } catch (e) {
-                console.error('Failed during history clearing:', e);
+                console.error('❌ Erro ao limpar histórico:', e);
                 setError(`Failed to clear history: ${e instanceof Error ? e.message : String(e)}`);
             }
         }
