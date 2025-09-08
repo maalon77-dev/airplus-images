@@ -1,0 +1,13 @@
+{
+  "name": "airplus-images-project",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_IMAGE_STORAGE_MODE": "mysql"
+  }
+}

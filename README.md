@@ -1,1 +1,1 @@
-# Meu GPT Image Playground
+# AirPlus Images Project
