@@ -8,6 +8,97 @@ async function handleGetHistory(request: NextRequest, user: { id: number; userna
         const { searchParams } = new URL(request.url);
         const limit = parseInt(searchParams.get('limit') || '50');
 
+        // Testar conexão MySQL primeiro
+        const isMySQLAvailable = await MySQLDatabase.testConnection();
+        
+        if (!isMySQLAvailable) {
+            console.log('⚠️ MySQL não disponível - retornando dados mockados para desenvolvimento');
+            
+            // Dados mockados para desenvolvimento local
+            const mockHistory = user.userLevel === 'ADMIN_SUPREMO' ? [
+                {
+                    id: 1,
+                    timestamp: Date.now() - 3600000,
+                    prompt: "Imagem de teste do admin",
+                    mode: "generate",
+                    quality: "high",
+                    background: "auto",
+                    moderation: "auto",
+                    output_format: "png",
+                    size: "auto",
+                    n_images: 1,
+                    duration_ms: 5000,
+                    cost_usd: 0.05,
+                    cost_brl: 0.25,
+                    text_input_tokens: 20,
+                    image_input_tokens: 0,
+                    image_output_tokens: 100,
+                    user_id: user.id,
+                    created_at: new Date(),
+                    images: [{ filename: "mock-image-1.png" }],
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        user_level: user.userLevel
+                    }
+                },
+                {
+                    id: 2,
+                    timestamp: Date.now() - 7200000,
+                    prompt: "Outra imagem de teste",
+                    mode: "edit",
+                    quality: "medium",
+                    background: "transparent",
+                    moderation: "auto",
+                    output_format: "png",
+                    size: "auto",
+                    n_images: 1,
+                    duration_ms: 3000,
+                    cost_usd: 0.03,
+                    cost_brl: 0.15,
+                    text_input_tokens: 15,
+                    image_input_tokens: 50,
+                    image_output_tokens: 80,
+                    user_id: user.id,
+                    created_at: new Date(),
+                    images: [{ filename: "mock-image-2.png" }],
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        user_level: user.userLevel
+                    }
+                }
+            ] : [
+                {
+                    id: 1,
+                    timestamp: Date.now() - 3600000,
+                    prompt: "Minha imagem de teste",
+                    mode: "generate",
+                    quality: "high",
+                    background: "auto",
+                    moderation: "auto",
+                    output_format: "png",
+                    size: "auto",
+                    n_images: 1,
+                    duration_ms: 5000,
+                    cost_usd: 0.05,
+                    cost_brl: 0.25,
+                    text_input_tokens: 20,
+                    image_input_tokens: 0,
+                    image_output_tokens: 100,
+                    user_id: user.id,
+                    created_at: new Date(),
+                    images: [{ filename: "mock-image-1.png" }]
+                }
+            ];
+
+            return NextResponse.json({ 
+                success: true, 
+                history: mockHistory,
+                mock: true // Indicar que são dados mockados
+            });
+        }
+
         // ADMIN_SUPREMO vê todo o histórico, USUARIO vê apenas o próprio
         const history = user.userLevel === 'ADMIN_SUPREMO' 
             ? await MySQLDatabase.getGenerationHistory(limit)
