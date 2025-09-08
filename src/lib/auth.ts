@@ -61,7 +61,7 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
         return {
             id: user.id,
             username: user.username,
-            userLevel: user.user_level
+            userLevel: user.user_level as 'ADMIN_SUPREMO' | 'USUARIO'
         };
     } catch (error) {
         console.error('Erro na verificação do token:', error);
