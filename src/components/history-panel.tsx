@@ -69,6 +69,9 @@ export function HistoryPanel({
     onDeletePreferenceDialogChange,
     userLevel
 }: HistoryPanelProps) {
+    console.log('🎨 HistoryPanel renderizado com:', history.length, 'itens');
+    console.log('🎨 HistoryPanel history:', history);
+    
     const [openPromptDialogTimestamp, setOpenPromptDialogTimestamp] = React.useState<number | null>(null);
     const [openCostDialogTimestamp, setOpenCostDialogTimestamp] = React.useState<number | null>(null);
     const [isTotalCostDialogOpen, setIsTotalCostDialogOpen] = React.useState(false);
