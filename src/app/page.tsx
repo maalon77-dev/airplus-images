@@ -52,6 +52,7 @@ const isOnVercelClient = vercelEnvClient === 'production' || vercelEnvClient ===
 
 let effectiveStorageModeClient: 'fs' | 'indexeddb' | 'mysql';
 
+// Forçar MySQL para desenvolvimento local quando não estiver no Vercel
 if (explicitModeClient === 'mysql') {
     effectiveStorageModeClient = 'mysql';
 } else if (explicitModeClient === 'fs') {
@@ -61,11 +62,18 @@ if (explicitModeClient === 'mysql') {
 } else if (isOnVercelClient) {
     effectiveStorageModeClient = 'indexeddb';
 } else {
-    effectiveStorageModeClient = 'fs';
+    // Forçar MySQL no desenvolvimento local
+    effectiveStorageModeClient = 'mysql';
 }
 console.log(
     `Client Effective Storage Mode: ${effectiveStorageModeClient} (Explicit: ${explicitModeClient || 'unset'}, Vercel Env: ${vercelEnvClient || 'N/A'})`
 );
+console.log('🔍 DEBUG Storage Mode:', {
+    explicitModeClient,
+    vercelEnvClient,
+    isOnVercelClient,
+    effectiveStorageModeClient
+});
 
 type ApiImageResponseItem = {
     filename: string;
