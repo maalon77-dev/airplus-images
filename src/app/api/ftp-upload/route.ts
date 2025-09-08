@@ -2,14 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createFTPUploadService } from '@/lib/ftp-upload';
 import { requireAuth } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+async function handleFTPUpload(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     try {
-        // Verificar autenticação
-        const authResult = await requireAuth(request);
-        if (!authResult.success) {
-            return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-        }
-
         const { imageBuffer, filename } = await request.json();
         
         if (!imageBuffer || !filename) {
@@ -49,14 +43,10 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function DELETE(request: NextRequest) {
-    try {
-        // Verificar autenticação
-        const authResult = await requireAuth(request);
-        if (!authResult.success) {
-            return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-        }
+export const POST = requireAuth(handleFTPUpload);
 
+async function handleFTPDelete(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
+    try {
         const { filename } = await request.json();
         
         if (!filename) {
@@ -91,3 +81,5 @@ export async function DELETE(request: NextRequest) {
         }, { status: 500 });
     }
 }
+
+export const DELETE = requireAuth(handleFTPDelete);
