@@ -91,12 +91,15 @@ export class MySQLDatabase {
     }
 
     // Criar novo usuário
-    static async createUser(username: string, passwordHash: string, userLevel: 'ADMIN_SUPREMO' | 'USUARIO' = 'USUARIO'): Promise<number> {
+    static async createUser(username: string, passwordHash: string, userLevel: 'ADMIN_SUPREMO' | 'USUARIO' = 'USUARIO', email?: string): Promise<number> {
         const connection = await pool.getConnection();
         try {
+            // Se não fornecido, usar username@localhost como email padrão
+            const userEmail = email || `${username}@localhost`;
+            
             const [result] = await connection.execute(
-                'INSERT INTO users (username, password_hash, user_level) VALUES (?, ?, ?)',
-                [username, passwordHash, userLevel]
+                'INSERT INTO users (username, email, password_hash, user_level) VALUES (?, ?, ?, ?)',
+                [username, userEmail, passwordHash, userLevel]
             );
             return (result as mysql.ResultSetHeader).insertId;
         } finally {
