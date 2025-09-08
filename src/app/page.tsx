@@ -1042,6 +1042,7 @@ export default function HomePage() {
                                 setEditDrawnPoints={setEditDrawnPoints}
                                 editMaskPreviewUrl={editMaskPreviewUrl}
                                 setEditMaskPreviewUrl={setEditMaskPreviewUrl}
+                                userLevel={user?.userLevel || 'USUARIO'}
                             />
                         </div>
                     </div>

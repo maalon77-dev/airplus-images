@@ -79,6 +79,7 @@ type EditingFormProps = {
     setEditDrawnPoints: React.Dispatch<React.SetStateAction<DrawnPoint[]>>;
     editMaskPreviewUrl: string | null;
     setEditMaskPreviewUrl: React.Dispatch<React.SetStateAction<string | null>>;
+    userLevel: string;
 };
 
 const RadioItemWithIcon = ({
@@ -139,7 +140,8 @@ export function EditingForm({
     editDrawnPoints,
     setEditDrawnPoints,
     editMaskPreviewUrl,
-    setEditMaskPreviewUrl
+    setEditMaskPreviewUrl,
+    userLevel
 }: EditingFormProps) {
     const [firstImagePreviewUrl, setFirstImagePreviewUrl] = React.useState<string | null>(null);
 
@@ -718,21 +720,23 @@ export function EditingForm({
                         </RadioGroup>
                     </div>
 
-                    <div className='space-y-2'>
-                        <Label htmlFor='edit-n-slider' className='text-white'>
-                            Número de Imagens: {editN[0]}
-                        </Label>
-                        <Slider
-                            id='edit-n-slider'
-                            min={1}
-                            max={10}
-                            step={1}
-                            value={editN}
-                            onValueChange={setEditN}
-                            disabled={isLoading}
-                            className='mt-3 [&>button]:border-black [&>button]:bg-white [&>button]:ring-offset-black [&>span:first-child]:h-1 [&>span:first-child>span]:bg-white'
-                        />
-                    </div>
+                    {userLevel === 'ADMIN_SUPREMO' && (
+                        <div className='space-y-2'>
+                            <Label htmlFor='edit-n-slider' className='text-white'>
+                                Número de Imagens: {editN[0]}
+                            </Label>
+                            <Slider
+                                id='edit-n-slider'
+                                min={1}
+                                max={10}
+                                step={1}
+                                value={editN}
+                                onValueChange={setEditN}
+                                disabled={isLoading}
+                                className='mt-3 [&>button]:border-black [&>button]:bg-white [&>button]:ring-offset-black [&>span:first-child]:h-1 [&>span:first-child>span]:bg-white'
+                            />
+                        </div>
+                    )}
                 </CardContent>
                 <CardFooter className='border-t border-white/10 p-4'>
                     <Button
