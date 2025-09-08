@@ -170,14 +170,22 @@ export default function HomePage() {
 
     // Função para carregar histórico do MySQL
     const loadMySQLHistory = React.useCallback(async () => {
-        if (!user) return;
+        if (!user) {
+            console.log('❌ loadMySQLHistory: Nenhum usuário logado');
+            return;
+        }
         
         try {
             console.log('🔄 Carregando histórico do MySQL para usuário:', user.username, 'ID:', user.id);
             const response = await fetch('/api/mysql-history');
+            console.log('📡 Response status:', response.status, response.ok);
+            
             if (response.ok) {
                 const data = await response.json();
                 console.log('📊 Dados recebidos da API:', data);
+                console.log('📊 data.success:', data.success);
+                console.log('📊 data.history length:', data.history?.length);
+                
                 if (data.success && data.history) {
                     // Converter o formato do MySQL para o formato esperado pelo frontend
                     const convertedHistory: HistoryMetadata[] = data.history.map((item: {
@@ -224,6 +232,11 @@ export default function HomePage() {
                     console.log('📋 Detalhes do histórico:', convertedHistory);
                     setHistory(convertedHistory);
                     console.log('🎯 Histórico definido no estado:', convertedHistory.length, 'itens');
+                    
+                    // Verificar se o estado foi atualizado
+                    setTimeout(() => {
+                        console.log('🔍 Verificação do estado após 100ms:', history.length, 'itens');
+                    }, 100);
                 } else {
                     console.log('❌ Nenhum histórico encontrado no MySQL');
                     setHistory([]);
