@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { MySQLDatabase, User } from './mysql-db';
+import { MySQLDatabase } from './mysql-db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -19,7 +19,7 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
         }
 
         // Verificar e decodificar token
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string; userLevel: string };
         
         // Buscar dados atualizados do usuário
         const user = await MySQLDatabase.getUserById(decoded.userId);

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Verificar e decodificar token
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string; userLevel: string };
         
         // Buscar dados atualizados do usuário
         const user = await MySQLDatabase.getUserById(decoded.userId);

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { LogOut, User, Crown, Users } from 'lucide-react';
+import { LogOut, User, Crown } from 'lucide-react';
 
 interface UserHeaderProps {
     user: {

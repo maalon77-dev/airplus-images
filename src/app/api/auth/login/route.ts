@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MySQLDatabase, pool } from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
                 'SELECT * FROM users WHERE username = ?',
                 [username]
             );
-            const users = rows as any[];
+            const users = rows as Array<{ id: number; username: string; password_hash: string; user_level: string }>;
             user = users.length > 0 ? users[0] : null;
         } finally {
             connection.release();
