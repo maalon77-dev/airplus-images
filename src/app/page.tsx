@@ -140,7 +140,7 @@ export default function HomePage() {
 
             return undefined;
         },
-        [allDbImages, blobUrlCache]
+        [allDbImages, blobUrlCache, effectiveStorageModeClient]
     );
 
     React.useEffect(() => {
