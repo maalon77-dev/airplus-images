@@ -50,23 +50,25 @@ const explicitModeClient = process.env.NEXT_PUBLIC_IMAGE_STORAGE_MODE;
 const vercelEnvClient = process.env.NEXT_PUBLIC_VERCEL_ENV;
 const isOnVercelClient = vercelEnvClient === 'production' || vercelEnvClient === 'preview';
 
-let effectiveStorageModeClient: 'fs' | 'indexeddb' | 'mysql' | 'ftp';
+// Função para determinar o storage mode efetivo
+const getEffectiveStorageMode = (): 'fs' | 'indexeddb' | 'mysql' | 'ftp' => {
+    if (explicitModeClient === 'mysql') {
+        return 'mysql';
+    } else if (explicitModeClient === 'fs') {
+        return 'fs';
+    } else if (explicitModeClient === 'indexeddb') {
+        return 'indexeddb';
+    } else if (explicitModeClient === 'ftp') {
+        return 'ftp';
+    } else if (isOnVercelClient) {
+        return 'indexeddb';
+    } else {
+        // Forçar FS no desenvolvimento local (mais simples e funcional)
+        return 'fs';
+    }
+};
 
-// Forçar MySQL para desenvolvimento local quando não estiver no Vercel
-if (explicitModeClient === 'mysql') {
-    effectiveStorageModeClient = 'mysql';
-} else if (explicitModeClient === 'fs') {
-    effectiveStorageModeClient = 'fs';
-} else if (explicitModeClient === 'indexeddb') {
-    effectiveStorageModeClient = 'indexeddb';
-} else if (explicitModeClient === 'ftp') {
-    effectiveStorageModeClient = 'ftp';
-} else if (isOnVercelClient) {
-    effectiveStorageModeClient = 'indexeddb';
-} else {
-    // Forçar FS no desenvolvimento local (mais simples e funcional)
-    effectiveStorageModeClient = 'fs';
-}
+const effectiveStorageModeClient = getEffectiveStorageMode();
 console.log(
     `Client Effective Storage Mode: ${effectiveStorageModeClient} (Explicit: ${explicitModeClient || 'unset'}, Vercel Env: ${vercelEnvClient || 'N/A'})`
 );
@@ -99,21 +101,12 @@ export default function HomePage() {
     
     // Log para monitorar mudanças no estado do histórico
     React.useEffect(() => {
-        console.log('📊 useEffect histórico executado - history.length:', history.length);
-        console.log('👤 Usuário atual:', user?.username, 'Nível:', user?.userLevel);
-        console.log('🔍 Storage mode:', effectiveStorageModeClient);
-        
         if (history.length > 0) {
             console.log('📊 Estado do histórico mudou:', history.length, 'itens');
-            console.log('📋 Primeiro item:', history[0]);
-            
-            // TEMPORARIAMENTE DESABILITADO: Lógica de limpeza automática
-            // O admin deve sempre ver todo o histórico, independente do storage mode
-            console.log('✅ Histórico carregado com sucesso - sem limpeza automática');
-        } else {
-            console.log('📊 Histórico vazio - não há itens para processar');
+            console.log('👤 Usuário atual:', user?.username, 'Nível:', user?.userLevel);
+            console.log('✅ Histórico carregado com sucesso');
         }
-    }, [history, effectiveStorageModeClient, user]);
+    }, [history.length, user?.username, user?.userLevel]);
     const [isInitialLoad, setIsInitialLoad] = React.useState(true);
     const [blobUrlCache, setBlobUrlCache] = React.useState<Record<string, string>>({});
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
@@ -338,7 +331,7 @@ export default function HomePage() {
         if (!isInitialLoad || user) {
             loadHistory();
         }
-    }, [user, isInitialLoad, loadMySQLHistory]); // Incluir todas as dependências necessárias
+    }, [user?.id, isInitialLoad]); // Simplificar dependências para evitar loops
 
     // REMOVIDO: useEffect duplicado que causava conflito
 
