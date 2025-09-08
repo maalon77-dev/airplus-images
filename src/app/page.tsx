@@ -67,7 +67,7 @@ type ApiImageResponseItem = {
 };
 
 export default function HomePage() {
-    const [mode, setMode] = React.useState<'generate' | 'edit'>('generate');
+    const [mode, setMode] = React.useState<'generate' | 'edit'>('edit');
     const [isPasswordRequiredByBackend, setIsPasswordRequiredByBackend] = React.useState<boolean | null>(null);
     const [clientPasswordHash, setClientPasswordHash] = React.useState<string | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
