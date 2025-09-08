@@ -339,6 +339,13 @@ export function HistoryPanel({
                                     </div>
 
                                     <div className='space-y-1 rounded-b-md border border-t-0 border-neutral-700 bg-black p-2 text-xs text-white/60'>
+                                        {item.user && userLevel === 'ADMIN_SUPREMO' && (
+                                            <p>
+                                                <span className='font-medium text-white/80'>User:</span>{' '}
+                                                <span className='text-blue-400'>{item.user.username}</span>
+                                                <span className='ml-1 text-xs text-neutral-500'>({item.user.user_level})</span>
+                                            </p>
+                                        )}
                                         <p title={`Generated on: ${new Date(item.timestamp).toLocaleString()}`}>
                                             <span className='font-medium text-white/80'>Time:</span>{' '}
                                             {formatDuration(item.durationMs)}

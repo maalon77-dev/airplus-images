@@ -13,14 +13,28 @@ async function handleGetHistory(request: NextRequest, user: { id: number; userna
             ? await MySQLDatabase.getGenerationHistory(limit)
             : await MySQLDatabase.getGenerationHistoryByUser(user.id, limit);
         
-        // Para cada item do histórico, buscar as imagens relacionadas
+        // Para cada item do histórico, buscar as imagens relacionadas e informações do usuário (se admin)
         const historyWithImages = await Promise.all(
             history.map(async (item) => {
                 const images = await MySQLDatabase.getHistoryImages(item.id);
-                return {
+                const result = {
                     ...item,
                     images: images.map(img => ({ filename: img.filename }))
                 };
+                
+                // Se for admin, incluir informações do usuário que criou o histórico
+                if (user.userLevel === 'ADMIN_SUPREMO' && item.user_id) {
+                    const userInfo = await MySQLDatabase.getUserById(item.user_id);
+                    if (userInfo) {
+                        result.user = {
+                            id: userInfo.id,
+                            username: userInfo.username,
+                            user_level: userInfo.user_level
+                        };
+                    }
+                }
+                
+                return result;
             })
         );
 

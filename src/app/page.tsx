@@ -30,6 +30,11 @@ export type HistoryMetadata = {
     mode: 'generate' | 'edit';
     costDetails: CostDetails | null;
     output_format?: GenerationFormData['output_format'];
+    user?: {
+        id: number;
+        username: string;
+        user_level: string;
+    };
 };
 
 type DrawnPoint = {
@@ -180,6 +185,11 @@ export default function HomePage() {
                         image_input_tokens: number;
                         image_output_tokens: number;
                         output_format: string;
+                        user?: {
+                            id: number;
+                            username: string;
+                            user_level: string;
+                        };
                     }) => ({
                         timestamp: item.timestamp,
                         images: item.images || [],
@@ -197,7 +207,8 @@ export default function HomePage() {
                             estimated_cost_usd: item.cost_usd,
                             estimated_cost_brl: item.cost_brl
                         } : null,
-                        output_format: item.output_format || 'png'
+                        output_format: item.output_format || 'png',
+                        user: item.user
                     }));
                     setHistory(convertedHistory);
                     console.log('Histórico carregado do MySQL:', convertedHistory.length, 'itens');
