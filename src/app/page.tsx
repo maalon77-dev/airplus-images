@@ -284,10 +284,12 @@ export default function HomePage() {
             
             if (effectiveStorageModeClient === 'mysql' && user) {
                 console.log('✅ Carregando do MySQL para usuário:', user.username);
+                console.log('🔍 Condições atendidas: effectiveStorageModeClient =', effectiveStorageModeClient, 'user =', user);
                 // Carregar do MySQL quando o usuário estiver logado
                 await loadMySQLHistory();
             } else {
                 console.log('📁 Carregando do localStorage');
+                console.log('🔍 Condições NÃO atendidas: effectiveStorageModeClient =', effectiveStorageModeClient, 'user =', user);
                 // Carregar do localStorage para outros modos
                 try {
                     const storedHistory = localStorage.getItem('openaiImageHistory');
