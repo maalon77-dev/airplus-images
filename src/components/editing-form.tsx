@@ -467,7 +467,7 @@ export function EditingForm({
                             </Button>
                         )}
                     </div>
-                    <CardDescription className='mt-1 text-white/60'>Modifique uma imagem usando gpt-image-1.</CardDescription>
+                    <CardDescription className='mt-1 text-white/60'>Modifique uma imagem usando AirPlus Images.</CardDescription>
                 </div>
                 <ModeToggle currentMode={currentMode} onModeChange={onModeChange} />
             </CardHeader>

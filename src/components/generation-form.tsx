@@ -150,7 +150,7 @@ export function GenerationForm({
                         )}
                     </div>
                     <CardDescription className='mt-1 text-white/60'>
-                        Crie uma nova imagem a partir de um prompt de texto usando gpt-image-1.
+                        Crie uma nova imagem a partir de um prompt de texto usando AirPlus Images.
                     </CardDescription>
                 </div>
                 <ModeToggle currentMode={currentMode} onModeChange={onModeChange} />

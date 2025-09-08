@@ -121,7 +121,7 @@ export function HistoryPanel({
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className='space-y-1 pt-1 text-xs text-neutral-400'>
-                                    <p>Preços para gpt-image-1:</p>
+                                    <p>Preços para AirPlus Images:</p>
                                     <ul className='list-disc pl-4'>
                                         <li>Entrada de Texto: R$ 26,00 / 1M tokens</li>
                                         <li>Entrada de Imagem: R$ 52,00 / 1M tokens</li>
@@ -272,7 +272,7 @@ export function HistoryPanel({
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <div className='space-y-1 pt-1 text-xs text-neutral-400'>
-                                                        <p>Preços para gpt-image-1:</p>
+                                                        <p>Preços para AirPlus Images:</p>
                                                         <ul className='list-disc pl-4'>
                                                             <li>Entrada de Texto: R$ 26,00 / 1M tokens</li>
                                                             <li>Entrada de Imagem: R$ 52,00 / 1M tokens</li>
