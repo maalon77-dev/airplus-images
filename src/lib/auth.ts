@@ -21,11 +21,41 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
         // Verificar e decodificar token
         const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string; userLevel: string };
         
-        // Buscar dados atualizados do usuário
-        const user = await MySQLDatabase.getUserById(decoded.userId);
+        // Testar conexão MySQL primeiro
+        let isMySQLAvailable = false;
+        try {
+            const { pool } = await import('./mysql-db');
+            const connection = await pool.getConnection();
+            await connection.ping();
+            connection.release();
+            isMySQLAvailable = true;
+        } catch (error) {
+            console.log('⚠️ MySQL não disponível - usando dados mockados para getAuthenticatedUser');
+            isMySQLAvailable = false;
+        }
+
+        let user;
         
-        if (!user) {
-            return null;
+        if (!isMySQLAvailable) {
+            // Dados mockados para desenvolvimento local
+            const mockUsers = [
+                { id: 4, username: 'admin2', user_level: 'ADMIN_SUPREMO' },
+                { id: 15, username: 'jhully', user_level: 'USUARIO' },
+                { id: 16, username: 'laura', user_level: 'USUARIO' }
+            ];
+            
+            user = mockUsers.find(u => u.id === decoded.userId);
+            
+            if (!user) {
+                return null;
+            }
+        } else {
+            // Buscar dados atualizados do usuário
+            user = await MySQLDatabase.getUserById(decoded.userId);
+            
+            if (!user) {
+                return null;
+            }
         }
 
         return {
