@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MySQLDatabase from '@/lib/mysql-db';
+import { requireAuth } from '@/lib/auth';
 
 // GET - Recuperar imagem do MySQL
-export async function GET(request: NextRequest) {
+async function handleGetImage(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     try {
         const { searchParams } = new URL(request.url);
         const filename = searchParams.get('filename');
@@ -15,6 +16,12 @@ export async function GET(request: NextRequest) {
         
         if (!image) {
             return NextResponse.json({ error: 'Imagem não encontrada' }, { status: 404 });
+        }
+
+        // Verificar se o usuário tem acesso à imagem
+        // ADMIN_SUPREMO pode ver todas as imagens, USUARIO apenas as próprias
+        if (user.userLevel !== 'ADMIN_SUPREMO' && image.user_id !== user.id) {
+            return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
         }
 
         return new NextResponse(image.image_data, {
@@ -30,8 +37,10 @@ export async function GET(request: NextRequest) {
     }
 }
 
+export const GET = requireAuth(handleGetImage);
+
 // POST - Salvar imagem no MySQL
-export async function POST(request: NextRequest) {
+async function handlePostImage(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     try {
         const formData = await request.formData();
         const file = formData.get('image') as File;
@@ -44,7 +53,7 @@ export async function POST(request: NextRequest) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        const imageId = await MySQLDatabase.saveImage(filename, buffer, file.type);
+        const imageId = await MySQLDatabase.saveImage(filename, buffer, file.type, user.id);
 
         return NextResponse.json({ 
             success: true, 
@@ -57,14 +66,22 @@ export async function POST(request: NextRequest) {
     }
 }
 
+export const POST = requireAuth(handlePostImage);
+
 // DELETE - Deletar imagem do MySQL
-export async function DELETE(request: NextRequest) {
+async function handleDeleteImage(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     try {
         const { searchParams } = new URL(request.url);
         const filename = searchParams.get('filename');
 
         if (!filename) {
             return NextResponse.json({ error: 'Filename é obrigatório' }, { status: 400 });
+        }
+
+        // Verificar se o usuário tem acesso à imagem antes de deletar
+        const image = await MySQLDatabase.getImage(filename);
+        if (image && user.userLevel !== 'ADMIN_SUPREMO' && image.user_id !== user.id) {
+            return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
         }
 
         await MySQLDatabase.deleteImage(filename);
@@ -78,3 +95,5 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
     }
 }
+
+export const DELETE = requireAuth(handleDeleteImage);

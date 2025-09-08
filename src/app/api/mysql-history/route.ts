@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MySQLDatabase from '@/lib/mysql-db';
+import { requireAuth } from '@/lib/auth';
 
 // GET - Recuperar histórico do MySQL
-export async function GET(request: NextRequest) {
+async function handleGetHistory(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     try {
         const { searchParams } = new URL(request.url);
         const limit = parseInt(searchParams.get('limit') || '50');
 
-        const history = await MySQLDatabase.getGenerationHistory(limit);
+        // ADMIN_SUPREMO vê todo o histórico, USUARIO vê apenas o próprio
+        const history = user.userLevel === 'ADMIN_SUPREMO' 
+            ? await MySQLDatabase.getGenerationHistory(limit)
+            : await MySQLDatabase.getGenerationHistoryByUser(user.id, limit);
         
         // Para cada item do histórico, buscar as imagens relacionadas
         const historyWithImages = await Promise.all(
@@ -29,6 +33,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
     }
 }
+
+export const GET = requireAuth(handleGetHistory);
 
 // POST - Salvar histórico no MySQL
 export async function POST(request: NextRequest) {

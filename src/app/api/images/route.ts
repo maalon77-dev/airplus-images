@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import path from 'path';
 import MySQLDatabase from '@/lib/mysql-db';
+import { requireAuth } from '@/lib/auth';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
@@ -69,7 +70,7 @@ function sha256(data: string): string {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-export async function POST(request: NextRequest) {
+async function handleImageGeneration(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
     console.log('Received POST request to /api/images');
 
     if (!process.env.OPENAI_API_KEY) {
@@ -227,7 +228,7 @@ export async function POST(request: NextRequest) {
                 } else if (effectiveStorageMode === 'mysql') {
                     const mimeType = getMimeTypeFromFormat(fileExtension);
                     console.log(`Attempting to save image to MySQL: ${filename}`);
-                    const imageId = await MySQLDatabase.saveImage(filename, buffer, mimeType);
+                    const imageId = await MySQLDatabase.saveImage(filename, buffer, mimeType, user.id);
                     console.log(`Successfully saved image to MySQL with ID: ${imageId}`);
                 } else {
                     // IndexedDB mode - no server-side saving needed
@@ -273,3 +274,5 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: errorMessage }, { status });
     }
 }
+
+export const POST = requireAuth(handleImageGeneration);

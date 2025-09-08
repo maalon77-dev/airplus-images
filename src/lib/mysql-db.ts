@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 import { mysqlConfig } from './mysql-config';
 
 // Pool de conexões para melhor performance
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
     ...mysqlConfig,
     waitForConnections: true,
     queueLimit: 0,
@@ -11,12 +11,22 @@ const pool = mysql.createPool({
     ssl: mysqlConfig.ssl === true ? { rejectUnauthorized: false } : undefined
 });
 
+export interface User {
+    id: number;
+    username: string;
+    password_hash: string;
+    user_level: 'ADMIN_SUPREMO' | 'USUARIO';
+    created_at: Date;
+    updated_at: Date;
+}
+
 export interface ImageRecord {
     id: number;
     filename: string;
     image_data: Buffer;
     mime_type: string;
     file_size: number;
+    user_id: number | null;
     created_at: Date;
     updated_at: Date;
 }
@@ -38,6 +48,7 @@ export interface GenerationHistory {
     text_input_tokens: number;
     image_input_tokens: number;
     image_output_tokens: number;
+    user_id: number | null;
     created_at: Date;
 }
 
@@ -49,13 +60,57 @@ export interface HistoryImage {
 }
 
 export class MySQLDatabase {
+    // Autenticar usuário
+    static async authenticateUser(username: string, passwordHash: string): Promise<User | null> {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.execute(
+                'SELECT * FROM users WHERE username = ? AND password_hash = ?',
+                [username, passwordHash]
+            );
+            const users = rows as User[];
+            return users.length > 0 ? users[0] : null;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // Buscar usuário por ID
+    static async getUserById(userId: number): Promise<User | null> {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.execute(
+                'SELECT * FROM users WHERE id = ?',
+                [userId]
+            );
+            const users = rows as User[];
+            return users.length > 0 ? users[0] : null;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // Criar novo usuário
+    static async createUser(username: string, passwordHash: string, userLevel: 'ADMIN_SUPREMO' | 'USUARIO' = 'USUARIO'): Promise<number> {
+        const connection = await pool.getConnection();
+        try {
+            const [result] = await connection.execute(
+                'INSERT INTO users (username, password_hash, user_level) VALUES (?, ?, ?)',
+                [username, passwordHash, userLevel]
+            );
+            return (result as mysql.ResultSetHeader).insertId;
+        } finally {
+            connection.release();
+        }
+    }
+
     // Salvar imagem no banco
-    static async saveImage(filename: string, imageData: Buffer, mimeType: string): Promise<number> {
+    static async saveImage(filename: string, imageData: Buffer, mimeType: string, userId?: number): Promise<number> {
         const connection = await pool.getConnection();
         try {
         const [result] = await connection.execute(
-            'INSERT INTO images (filename, image_data, mime_type, file_size) VALUES (?, ?, ?, ?)',
-            [filename, imageData, mimeType, imageData.length]
+            'INSERT INTO images (filename, image_data, mime_type, file_size, user_id) VALUES (?, ?, ?, ?, ?)',
+            [filename, imageData, mimeType, imageData.length, userId || null]
         );
         return (result as mysql.ResultSetHeader).insertId;
         } finally {
@@ -79,19 +134,19 @@ export class MySQLDatabase {
     }
 
     // Salvar histórico de geração
-    static async saveGenerationHistory(history: Omit<GenerationHistory, 'id' | 'created_at'>): Promise<number> {
+    static async saveGenerationHistory(history: Omit<GenerationHistory, 'id' | 'created_at'>, userId?: number): Promise<number> {
         const connection = await pool.getConnection();
         try {
         const [result] = await connection.execute(
             `INSERT INTO generation_history 
             (timestamp, prompt, mode, quality, background, moderation, output_format, size, n_images, 
-             duration_ms, cost_usd, cost_brl, text_input_tokens, image_input_tokens, image_output_tokens) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             duration_ms, cost_usd, cost_brl, text_input_tokens, image_input_tokens, image_output_tokens, user_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 history.timestamp, history.prompt, history.mode, history.quality, history.background,
                 history.moderation, history.output_format, history.size, history.n_images,
                 history.duration_ms, history.cost_usd, history.cost_brl,
-                history.text_input_tokens, history.image_input_tokens, history.image_output_tokens
+                history.text_input_tokens, history.image_input_tokens, history.image_output_tokens, userId || null
             ]
         );
         return (result as mysql.ResultSetHeader).insertId;
@@ -113,13 +168,27 @@ export class MySQLDatabase {
         }
     }
 
-    // Recuperar histórico completo
+    // Recuperar histórico completo (apenas para ADMIN_SUPREMO)
     static async getGenerationHistory(limit: number = 50): Promise<GenerationHistory[]> {
         const connection = await pool.getConnection();
         try {
             const [rows] = await connection.execute(
                 'SELECT * FROM generation_history ORDER BY timestamp DESC LIMIT ?',
                 [limit]
+            );
+            return rows as GenerationHistory[];
+        } finally {
+            connection.release();
+        }
+    }
+
+    // Recuperar histórico por usuário
+    static async getGenerationHistoryByUser(userId: number, limit: number = 50): Promise<GenerationHistory[]> {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.execute(
+                'SELECT * FROM generation_history WHERE user_id = ? ORDER BY timestamp DESC LIMIT ?',
+                [userId, limit]
             );
             return rows as GenerationHistory[];
         } finally {

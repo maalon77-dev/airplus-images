@@ -5,6 +5,8 @@ import { GenerationForm, type GenerationFormData } from '@/components/generation
 import { HistoryPanel } from '@/components/history-panel';
 import { ImageOutput } from '@/components/image-output';
 import { PasswordDialog } from '@/components/password-dialog';
+import { LoginForm } from '@/components/login-form';
+import { UserHeader } from '@/components/user-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { calculateApiCost, type CostDetails } from '@/lib/cost-utils';
 import { db, type ImageRecord } from '@/lib/db';
@@ -67,6 +69,8 @@ type ApiImageResponseItem = {
 };
 
 export default function HomePage() {
+    const [user, setUser] = React.useState<{ id: number; username: string; userLevel: string } | null>(null);
+    const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
     const [mode, setMode] = React.useState<'generate' | 'edit'>('edit');
     const [isPasswordRequiredByBackend, setIsPasswordRequiredByBackend] = React.useState<boolean | null>(null);
     const [clientPasswordHash, setClientPasswordHash] = React.useState<string | null>(null);
@@ -170,6 +174,20 @@ export default function HomePage() {
     }, []);
 
     React.useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUser(data.user);
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+            } finally {
+                setIsCheckingAuth(false);
+            }
+        };
+
         const fetchAuthStatus = async () => {
             try {
                 const response = await fetch('/api/auth-status');
@@ -184,6 +202,7 @@ export default function HomePage() {
             }
         };
 
+        checkAuth();
         fetchAuthStatus();
         const storedHash = localStorage.getItem('clientPasswordHash');
         if (storedHash) {
@@ -775,6 +794,34 @@ export default function HomePage() {
         setItemToDeleteConfirm(null);
     };
 
+    const handleLoginSuccess = (userData: { id: number; username: string; userLevel: string }) => {
+        setUser(userData);
+    };
+
+    const handleLogout = () => {
+        setUser(null);
+        setHistory([]);
+        setLatestImageBatch(null);
+        setError(null);
+    };
+
+    // Mostrar tela de carregamento enquanto verifica autenticação
+    if (isCheckingAuth) {
+        return (
+            <main className='flex min-h-screen flex-col items-center justify-center bg-black text-white'>
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                    <p>Verificando autenticação...</p>
+                </div>
+            </main>
+        );
+    }
+
+    // Mostrar tela de login se não estiver autenticado
+    if (!user) {
+        return <LoginForm onLoginSuccess={handleLoginSuccess} />;
+    }
+
     return (
         <main className='flex min-h-screen flex-col items-center bg-black p-4 text-white md:p-8 lg:p-12'>
             <PasswordDialog
@@ -789,6 +836,7 @@ export default function HomePage() {
                 }
             />
             <div className='w-full max-w-7xl space-y-6'>
+                <UserHeader user={user} onLogout={handleLogout} />
                 <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
                     <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
                         <div className={mode === 'generate' ? 'block h-full w-full' : 'hidden'}>
@@ -889,6 +937,7 @@ export default function HomePage() {
                         onCancelDeletion={handleCancelDeletion}
                         deletePreferenceDialogValue={dialogCheckboxStateSkipConfirm}
                         onDeletePreferenceDialogChange={setDialogCheckboxStateSkipConfirm}
+                        userLevel={user.userLevel}
                     />
                 </div>
             </div>

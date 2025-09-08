@@ -41,6 +41,7 @@ type HistoryPanelProps = {
     onCancelDeletion: () => void;
     deletePreferenceDialogValue: boolean;
     onDeletePreferenceDialogChange: (isChecked: boolean) => void;
+    userLevel: string;
 };
 
 const formatDuration = (ms: number): string => {
@@ -65,7 +66,8 @@ export function HistoryPanel({
     onConfirmDeletion,
     onCancelDeletion,
     deletePreferenceDialogValue,
-    onDeletePreferenceDialogChange
+    onDeletePreferenceDialogChange,
+    userLevel
 }: HistoryPanelProps) {
     const [openPromptDialogTimestamp, setOpenPromptDialogTimestamp] = React.useState<number | null>(null);
     const [openCostDialogTimestamp, setOpenCostDialogTimestamp] = React.useState<number | null>(null);
@@ -76,14 +78,14 @@ export function HistoryPanel({
         let cost = 0;
         let images = 0;
         history.forEach((item) => {
-            if (item.costDetails) {
+            if (item.costDetails && userLevel === 'ADMIN_SUPREMO') {
                 cost += item.costDetails.estimated_cost_brl;
             }
             images += item.images?.length ?? 0;
         });
 
         return { totalCost: Math.round(cost * 100) / 100, totalImages: images };
-    }, [history]);
+    }, [history, userLevel]);
 
     const averageCost = totalImages > 0 ? totalCost / totalImages : 0;
 
@@ -103,7 +105,7 @@ export function HistoryPanel({
             <CardHeader className='flex flex-row items-center justify-between gap-4 border-b border-white/10 px-4 py-3'>
                 <div className='flex items-center gap-2'>
                     <CardTitle className='text-lg font-medium text-white'>Histórico</CardTitle>
-                    {totalCost > 0 && (
+                    {totalCost > 0 && userLevel === 'ADMIN_SUPREMO' && (
                         <Dialog open={isTotalCostDialogOpen} onOpenChange={setIsTotalCostDialogOpen}>
                             <DialogTrigger asChild>
                                 <button
@@ -248,7 +250,7 @@ export function HistoryPanel({
                                                 )}
                                             </div>
                                         </button>
-                                        {item.costDetails && (
+                                        {item.costDetails && userLevel === 'ADMIN_SUPREMO' && (
                                             <Dialog
                                                 open={openCostDialogTimestamp === itemKey}
                                                 onOpenChange={(isOpen) => !isOpen && setOpenCostDialogTimestamp(null)}>
