@@ -183,8 +183,11 @@ export default function HomePage() {
         
         try {
             console.log('🔄 Carregando histórico do MySQL para usuário:', user.username, 'ID:', user.id);
-            const response = await fetch('/api/mysql-history');
+            const response = await fetch('/api/mysql-history', {
+                credentials: 'include' // Garantir que cookies sejam enviados
+            });
             console.log('📡 Response status:', response.status, response.ok);
+            console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
             
             if (response.ok) {
                 const data = await response.json();
@@ -318,13 +321,22 @@ export default function HomePage() {
     React.useEffect(() => {
         const checkAuth = async () => {
             try {
+                console.log('🔐 Verificando autenticação...');
                 const response = await fetch('/api/auth/me');
+                console.log('🔐 Response auth status:', response.status, response.ok);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('🔐 Dados de autenticação:', data);
                     setUser(data.user);
+                    console.log('🔐 Usuário definido:', data.user);
+                } else {
+                    console.log('🔐 Usuário não autenticado');
+                    setUser(null);
                 }
             } catch (error) {
-                console.error('Error checking auth:', error);
+                console.error('❌ Erro ao verificar autenticação:', error);
+                setUser(null);
             } finally {
                 setIsCheckingAuth(false);
             }
