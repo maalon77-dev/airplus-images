@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { pool } from '@/lib/mysql-db';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function handleListUsers(_request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const connection = await pool.getConnection();
