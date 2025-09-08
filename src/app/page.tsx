@@ -112,7 +112,10 @@ export default function HomePage() {
             
             if (hasOldMySQLItems && effectiveStorageModeClient === 'fs' && user?.userLevel !== 'ADMIN_SUPREMO') {
                 console.log('⚠️ Detectados itens antigos do MySQL. Limpando histórico para usuário comum...');
+                console.log('🔍 Detalhes:', { hasOldMySQLItems, effectiveStorageModeClient, userLevel: user?.userLevel });
                 setHistory([]);
+            } else if (hasOldMySQLItems && effectiveStorageModeClient === 'fs' && user?.userLevel === 'ADMIN_SUPREMO') {
+                console.log('✅ Admin detectado - preservando histórico com itens antigos do MySQL');
             }
         }
     }, [history, effectiveStorageModeClient]);
