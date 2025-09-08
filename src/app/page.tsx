@@ -756,11 +756,20 @@ export default function HomePage() {
         console.log(
             `Selecting history item from ${new Date(item.timestamp).toISOString()}, stored via: ${item.storageModeUsed}`
         );
+        console.log('🔍 Item details:', item);
+        console.log('🔍 Current effectiveStorageModeClient:', effectiveStorageModeClient);
+        
         const originalStorageMode = item.storageModeUsed || 'fs';
+        console.log('🔍 Using storage mode:', originalStorageMode);
 
         const selectedBatchPromises = item.images.map(async (imgInfo) => {
             let path: string | undefined;
-            if (originalStorageMode === 'mysql') {
+            
+            // Se o item é do MySQL mas estamos usando FS local, tentar FS primeiro
+            if (originalStorageMode === 'mysql' && effectiveStorageModeClient === 'fs') {
+                path = `/api/image/${imgInfo.filename}`;
+                console.log('🔄 Tentando FS para item MySQL:', path);
+            } else if (originalStorageMode === 'mysql') {
                 path = `/api/mysql-images?filename=${encodeURIComponent(imgInfo.filename)}`;
             } else if (originalStorageMode === 'indexeddb') {
                 path = getImageSrc(imgInfo.filename);
@@ -781,6 +790,10 @@ export default function HomePage() {
 
         Promise.all(selectedBatchPromises).then((resolvedBatch) => {
             const validImages = resolvedBatch.filter(Boolean) as { path: string; filename: string }[];
+            
+            console.log('🔍 Resolved batch:', resolvedBatch);
+            console.log('🔍 Valid images:', validImages);
+            console.log('🔍 Setting latestImageBatch to:', validImages.length > 0 ? validImages : null);
 
             if (validImages.length !== item.images.length && !error) {
                 setError(
