@@ -21,7 +21,7 @@ type HistoryImage = {
 export type HistoryMetadata = {
     timestamp: number;
     images: HistoryImage[];
-    storageModeUsed?: 'fs' | 'indexeddb' | 'mysql';
+    storageModeUsed?: 'fs' | 'indexeddb' | 'mysql' | 'ftp';
     durationMs: number;
     quality: GenerationFormData['quality'];
     background: GenerationFormData['background'];
