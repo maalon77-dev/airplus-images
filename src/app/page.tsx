@@ -7,6 +7,7 @@ import { ImageOutput } from '@/components/image-output';
 import { PasswordDialog } from '@/components/password-dialog';
 import { LoginForm } from '@/components/login-form';
 import { UserHeader } from '@/components/user-header';
+import { UserManagement } from '@/components/user-management';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { calculateApiCost, type CostDetails } from '@/lib/cost-utils';
 import { db, type ImageRecord } from '@/lib/db';
@@ -837,6 +838,12 @@ export default function HomePage() {
             />
             <div className='w-full max-w-7xl space-y-6'>
                 <UserHeader user={user} onLogout={handleLogout} />
+                
+                {/* Gerenciamento de Usuários - Apenas para ADMIN SUPREMO */}
+                {user.userLevel === 'ADMIN_SUPREMO' && (
+                    <UserManagement currentUser={user} />
+                )}
+                
                 <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
                     <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
                         <div className={mode === 'generate' ? 'block h-full w-full' : 'hidden'}>
