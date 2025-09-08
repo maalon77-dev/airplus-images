@@ -102,7 +102,7 @@ export default function HomePage() {
     const [editPrompt, setEditPrompt] = React.useState('');
     const [editN, setEditN] = React.useState([1]);
     const [editSize, setEditSize] = React.useState<EditingFormData['size']>('auto');
-    const [editQuality, setEditQuality] = React.useState<EditingFormData['quality']>('auto');
+    const [editQuality, setEditQuality] = React.useState<EditingFormData['quality']>('high');
     const [editBrushSize, setEditBrushSize] = React.useState([20]);
     const [editShowMaskEditor, setEditShowMaskEditor] = React.useState(false);
     const [editGeneratedMaskFile, setEditGeneratedMaskFile] = React.useState<File | null>(null);
