@@ -187,7 +187,6 @@ export default function HomePage() {
                 credentials: 'include' // Garantir que cookies sejam enviados
             });
             console.log('📡 Response status:', response.status, response.ok);
-            console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
             
             if (response.ok) {
                 const data = await response.json();
@@ -239,22 +238,24 @@ export default function HomePage() {
                     }));
                     console.log('✅ Histórico convertido:', convertedHistory.length, 'itens');
                     console.log('📋 Detalhes do histórico:', convertedHistory);
-                    setHistory(convertedHistory);
-                    console.log('🎯 Histórico definido no estado:', convertedHistory.length, 'itens');
                     
-                    // Verificar se o estado foi atualizado
+                    // FORÇAR ATUALIZAÇÃO DO ESTADO
+                    setHistory([]); // Limpar primeiro
                     setTimeout(() => {
-                        console.log('🔍 Verificação do estado após 100ms:', history.length, 'itens');
-                    }, 100);
+                        setHistory(convertedHistory); // Definir novo histórico
+                        console.log('🎯 Histórico FORÇADO no estado:', convertedHistory.length, 'itens');
+                    }, 10);
                 } else {
                     console.log('❌ Nenhum histórico encontrado no MySQL');
                     setHistory([]);
                 }
             } else {
                 console.error('❌ Erro ao carregar histórico do MySQL:', response.statusText);
+                setHistory([]);
             }
         } catch (error) {
             console.error('❌ Erro ao carregar histórico do MySQL:', error);
+            setHistory([]);
         }
     }, [user]);
 
@@ -311,8 +312,8 @@ export default function HomePage() {
                 console.log('❌ Nenhum usuário logado - Limpando histórico');
                 // Limpar histórico quando não há usuário logado
                 setHistory([]);
-            }
-            setIsInitialLoad(false);
+        }
+        setIsInitialLoad(false);
         };
         
         loadHistory();
@@ -1107,6 +1108,16 @@ export default function HomePage() {
                 </div>
 
                 <div className='min-h-[450px]'>
+                <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
+                    <h3 className="font-bold text-yellow-800 mb-2">🔧 DEBUG - Histórico</h3>
+                    <p className="text-sm text-yellow-700 mb-2">Usuário: {user.username} | Histórico: {history.length} itens</p>
+                    <button
+                        onClick={loadMySQLHistory}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-bold"
+                    >
+                        🔄 FORÇAR RECARREGAR HISTÓRICO
+                    </button>
+                </div>
                     <HistoryPanel
                         history={history}
                         onSelectImage={handleHistorySelect}
