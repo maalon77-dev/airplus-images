@@ -270,10 +270,16 @@ export default function HomePage() {
 
     React.useEffect(() => {
         const loadHistory = async () => {
+            console.log('🔄 useEffect loadHistory executado');
+            console.log('📊 effectiveStorageModeClient:', effectiveStorageModeClient);
+            console.log('👤 user:', user);
+            
             if (effectiveStorageModeClient === 'mysql' && user) {
+                console.log('✅ Carregando do MySQL para usuário:', user.username);
                 // Carregar do MySQL quando o usuário estiver logado
                 await loadMySQLHistory();
             } else {
+                console.log('📁 Carregando do localStorage');
                 // Carregar do localStorage para outros modos
                 try {
                     const storedHistory = localStorage.getItem('openaiImageHistory');
