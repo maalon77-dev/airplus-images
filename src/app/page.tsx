@@ -165,9 +165,11 @@ export default function HomePage() {
         if (!user) return;
         
         try {
+            console.log('🔄 Carregando histórico do MySQL para usuário:', user.username, 'ID:', user.id);
             const response = await fetch('/api/mysql-history');
             if (response.ok) {
                 const data = await response.json();
+                console.log('📊 Dados recebidos da API:', data);
                 if (data.success && data.history) {
                     // Converter o formato do MySQL para o formato esperado pelo frontend
                     const convertedHistory: HistoryMetadata[] = data.history.map((item: {
@@ -210,14 +212,19 @@ export default function HomePage() {
                         output_format: item.output_format || 'png',
                         user: item.user
                     }));
+                    console.log('✅ Histórico convertido:', convertedHistory.length, 'itens');
+                    console.log('📋 Detalhes do histórico:', convertedHistory);
                     setHistory(convertedHistory);
-                    console.log('Histórico carregado do MySQL:', convertedHistory.length, 'itens');
+                    console.log('🎯 Histórico definido no estado:', convertedHistory.length, 'itens');
+                } else {
+                    console.log('❌ Nenhum histórico encontrado no MySQL');
+                    setHistory([]);
                 }
             } else {
-                console.error('Erro ao carregar histórico do MySQL:', response.statusText);
+                console.error('❌ Erro ao carregar histórico do MySQL:', response.statusText);
             }
         } catch (error) {
-            console.error('Erro ao carregar histórico do MySQL:', error);
+            console.error('❌ Erro ao carregar histórico do MySQL:', error);
         }
     }, [user]);
 
