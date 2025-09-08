@@ -3,7 +3,7 @@ import { MySQLDatabase } from '@/lib/mysql-db';
 import { requireAdmin } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
-async function handleCreateUser(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
+async function handleCreateUser(request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const { username, password, userLevel } = await request.json();
 

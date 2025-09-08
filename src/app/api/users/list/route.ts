@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { pool } from '@/lib/mysql-db';
 
-async function handleListUsers(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
+async function handleListUsers(_request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const connection = await pool.getConnection();
         let users;
