@@ -327,7 +327,7 @@ export default function HomePage() {
         if (!isInitialLoad || user) {
             loadHistory();
         }
-    }, [user?.id]); // Usar apenas user.id para evitar re-renders desnecessários
+    }, [user?.id, isInitialLoad, loadMySQLHistory]); // Incluir todas as dependências necessárias
 
     // REMOVIDO: useEffect duplicado que causava conflito
 
