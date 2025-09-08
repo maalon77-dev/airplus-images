@@ -97,8 +97,9 @@ export default function HomePage() {
     
     // Log para monitorar mudanças no estado do histórico
     React.useEffect(() => {
-        console.log('📊 Estado do histórico mudou:', history.length, 'itens');
-        console.log('📊 Histórico atual:', history);
+        if (history.length > 0) {
+            console.log('📊 Estado do histórico mudou:', history.length, 'itens');
+        }
     }, [history]);
     const [isInitialLoad, setIsInitialLoad] = React.useState(true);
     const [blobUrlCache, setBlobUrlCache] = React.useState<Record<string, string>>({});
@@ -154,7 +155,7 @@ export default function HomePage() {
 
             return undefined;
         },
-        [allDbImages, blobUrlCache, effectiveStorageModeClient]
+        [allDbImages, blobUrlCache]
     );
 
     React.useEffect(() => {
@@ -310,12 +311,15 @@ export default function HomePage() {
                 console.log('❌ Nenhum usuário logado - Limpando histórico');
                 // Limpar histórico quando não há usuário logado
                 setHistory([]);
-        }
-        setIsInitialLoad(false);
+            }
+            setIsInitialLoad(false);
         };
         
-        loadHistory();
-    }, [user, loadMySQLHistory]);
+        // Evitar loops infinitos
+        if (!isInitialLoad || user) {
+            loadHistory();
+        }
+    }, [user?.id]); // Usar apenas user.id para evitar re-renders desnecessários
 
     // REMOVIDO: useEffect duplicado que causava conflito
 
@@ -1099,31 +1103,21 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <div className='min-h-[450px]'>
-                <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
-                    <h3 className="font-bold text-yellow-800 mb-2">🔧 DEBUG - Histórico</h3>
-                    <p className="text-sm text-yellow-700 mb-2">Usuário: {user.username} | Histórico: {history.length} itens</p>
-                    <button
-                        onClick={loadMySQLHistory}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-bold"
-                    >
-                        🔄 FORÇAR RECARREGAR HISTÓRICO
-                    </button>
-                </div>
-                    <HistoryPanel
-                        history={history}
-                        onSelectImage={handleHistorySelect}
-                        onClearHistory={handleClearHistory}
-                        getImageSrc={getImageSrc}
-                        onDeleteItemRequest={handleRequestDeleteItem}
-                        itemPendingDeleteConfirmation={itemToDeleteConfirm}
-                        onConfirmDeletion={handleConfirmDeletion}
-                        onCancelDeletion={handleCancelDeletion}
-                        deletePreferenceDialogValue={dialogCheckboxStateSkipConfirm}
-                        onDeletePreferenceDialogChange={setDialogCheckboxStateSkipConfirm}
-                        userLevel={user.userLevel}
-                    />
-                </div>
+            <div className='min-h-[450px]'>
+                <HistoryPanel
+                    history={history}
+                    onSelectImage={handleHistorySelect}
+                    onClearHistory={handleClearHistory}
+                    getImageSrc={getImageSrc}
+                    onDeleteItemRequest={handleRequestDeleteItem}
+                    itemPendingDeleteConfirmation={itemToDeleteConfirm}
+                    onConfirmDeletion={handleConfirmDeletion}
+                    onCancelDeletion={handleCancelDeletion}
+                    deletePreferenceDialogValue={dialogCheckboxStateSkipConfirm}
+                    onDeletePreferenceDialogChange={setDialogCheckboxStateSkipConfirm}
+                    userLevel={user.userLevel}
+                />
+            </div>
             </div>
         </main>
     );
