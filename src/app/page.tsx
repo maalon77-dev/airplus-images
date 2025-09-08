@@ -101,15 +101,17 @@ export default function HomePage() {
     React.useEffect(() => {
         if (history.length > 0) {
             console.log('📊 Estado do histórico mudou:', history.length, 'itens');
+            console.log('👤 Usuário atual:', user?.username, 'Nível:', user?.userLevel);
             
             // Verificar se há itens antigos do MySQL que não funcionam
+            // Só limpar para usuários comuns, não para admin
             const hasOldMySQLItems = history.some(item => 
                 item.storageModeUsed === 'mysql' && 
                 item.images.some(img => !img.filename.includes('http') && !img.filename.includes('/api/'))
             );
             
-            if (hasOldMySQLItems && effectiveStorageModeClient === 'fs') {
-                console.log('⚠️ Detectados itens antigos do MySQL. Limpando histórico...');
+            if (hasOldMySQLItems && effectiveStorageModeClient === 'fs' && user?.userLevel !== 'ADMIN_SUPREMO') {
+                console.log('⚠️ Detectados itens antigos do MySQL. Limpando histórico para usuário comum...');
                 setHistory([]);
             }
         }
