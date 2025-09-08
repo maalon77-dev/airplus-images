@@ -155,24 +155,114 @@ export default function HomePage() {
         };
     }, [editSourceImagePreviewUrls]);
 
-    React.useEffect(() => {
+    // Função para carregar histórico do MySQL
+    const loadMySQLHistory = React.useCallback(async () => {
+        if (!user) return;
+        
         try {
-            const storedHistory = localStorage.getItem('openaiImageHistory');
-            if (storedHistory) {
-                const parsedHistory: HistoryMetadata[] = JSON.parse(storedHistory);
-                if (Array.isArray(parsedHistory)) {
-                    setHistory(parsedHistory);
-                } else {
-                    console.warn('Invalid history data found in localStorage.');
+            const response = await fetch('/api/mysql-history');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.history) {
+                    // Converter o formato do MySQL para o formato esperado pelo frontend
+                    const convertedHistory: HistoryMetadata[] = data.history.map((item: any) => ({
+                        timestamp: item.timestamp,
+                        images: item.images || [],
+                        storageModeUsed: 'mysql' as const,
+                        durationMs: item.duration_ms || 0,
+                        quality: item.quality || 'auto',
+                        background: item.background || 'auto',
+                        moderation: item.moderation || 'auto',
+                        prompt: item.prompt || '',
+                        mode: item.mode || 'generate',
+                        costDetails: item.cost_usd && item.cost_brl ? {
+                            text_input_tokens: item.text_input_tokens || 0,
+                            image_input_tokens: item.image_input_tokens || 0,
+                            image_output_tokens: item.image_output_tokens || 0,
+                            estimated_cost_usd: item.cost_usd,
+                            estimated_cost_brl: item.cost_brl
+                        } : null,
+                        output_format: item.output_format || 'png'
+                    }));
+                    setHistory(convertedHistory);
+                    console.log('Histórico carregado do MySQL:', convertedHistory.length, 'itens');
+                }
+            } else {
+                console.error('Erro ao carregar histórico do MySQL:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar histórico do MySQL:', error);
+        }
+    }, [user]);
+
+    // Função para salvar histórico no MySQL
+    const saveMySQLHistory = React.useCallback(async (historyEntry: HistoryMetadata) => {
+        if (!user) return;
+        
+        try {
+            const response = await fetch('/api/mysql-history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    timestamp: historyEntry.timestamp,
+                    prompt: historyEntry.prompt,
+                    mode: historyEntry.mode,
+                    quality: historyEntry.quality,
+                    background: historyEntry.background,
+                    moderation: historyEntry.moderation,
+                    output_format: historyEntry.output_format,
+                    size: 'auto',
+                    n_images: historyEntry.images.length,
+                    duration_ms: historyEntry.durationMs,
+                    cost_usd: historyEntry.costDetails?.estimated_cost_usd || 0,
+                    cost_brl: historyEntry.costDetails?.estimated_cost_brl || 0,
+                    text_input_tokens: historyEntry.costDetails?.text_input_tokens || 0,
+                    image_input_tokens: historyEntry.costDetails?.image_input_tokens || 0,
+                    image_output_tokens: historyEntry.costDetails?.image_output_tokens || 0,
+                    image_filenames: historyEntry.images.map(img => img.filename)
+                })
+            });
+            
+            if (response.ok) {
+                console.log('Histórico salvo no MySQL com sucesso');
+            } else {
+                console.error('Erro ao salvar histórico no MySQL:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Erro ao salvar histórico no MySQL:', error);
+        }
+    }, [user]);
+
+    React.useEffect(() => {
+        const loadHistory = async () => {
+            if (effectiveStorageModeClient === 'mysql' && user) {
+                // Carregar do MySQL quando o usuário estiver logado
+                await loadMySQLHistory();
+            } else {
+                // Carregar do localStorage para outros modos
+                try {
+                    const storedHistory = localStorage.getItem('openaiImageHistory');
+                    if (storedHistory) {
+                        const parsedHistory: HistoryMetadata[] = JSON.parse(storedHistory);
+                        if (Array.isArray(parsedHistory)) {
+                            setHistory(parsedHistory);
+                        } else {
+                            console.warn('Invalid history data found in localStorage.');
+                            localStorage.removeItem('openaiImageHistory');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to load or parse history from localStorage:', e);
                     localStorage.removeItem('openaiImageHistory');
                 }
             }
-        } catch (e) {
-            console.error('Failed to load or parse history from localStorage:', e);
-            localStorage.removeItem('openaiImageHistory');
-        }
-        setIsInitialLoad(false);
-    }, []);
+            setIsInitialLoad(false);
+        };
+        
+        loadHistory();
+    }, [user, effectiveStorageModeClient, loadMySQLHistory]);
 
     React.useEffect(() => {
         const checkAuth = async () => {
@@ -210,6 +300,15 @@ export default function HomePage() {
             setClientPasswordHash(storedHash);
         }
     }, []);
+
+    // Recarregar histórico quando o usuário mudar (login/logout)
+    React.useEffect(() => {
+        if (user && effectiveStorageModeClient === 'mysql') {
+            loadMySQLHistory();
+        } else if (!user && effectiveStorageModeClient === 'mysql') {
+            setHistory([]);
+        }
+    }, [user, effectiveStorageModeClient, loadMySQLHistory]);
 
     React.useEffect(() => {
         if (!isInitialLoad) {
@@ -447,6 +546,11 @@ export default function HomePage() {
                     costDetails: costDetails
                 };
 
+                // Salvar histórico no MySQL se estiver usando modo MySQL
+                if (effectiveStorageModeClient === 'mysql') {
+                    await saveMySQLHistory(newHistoryEntry);
+                }
+
                 let newImageBatchPromises: Promise<{ path: string; filename: string } | null>[] = [];
                 if (effectiveStorageModeClient === 'mysql') {
                     console.log('Processando imagens para armazenamento MySQL...');
@@ -622,8 +726,11 @@ export default function HomePage() {
                 if (effectiveStorageModeClient === 'indexeddb') {
                     await db.images.clear();
                     console.log('Cleared images from IndexedDB.');
-
                     setBlobUrlCache({});
+                } else if (effectiveStorageModeClient === 'mysql') {
+                    // Para MySQL, recarregar o histórico vazio do servidor
+                    await loadMySQLHistory();
+                    console.log('Cleared history from MySQL.');
                 }
             } catch (e) {
                 console.error('Failed during history clearing:', e);
