@@ -165,7 +165,22 @@ export default function HomePage() {
                 const data = await response.json();
                 if (data.success && data.history) {
                     // Converter o formato do MySQL para o formato esperado pelo frontend
-                    const convertedHistory: HistoryMetadata[] = data.history.map((item: any) => ({
+                    const convertedHistory: HistoryMetadata[] = data.history.map((item: {
+                        timestamp: number;
+                        images: { filename: string }[];
+                        duration_ms: number;
+                        quality: string;
+                        background: string;
+                        moderation: string;
+                        prompt: string;
+                        mode: string;
+                        cost_usd: number;
+                        cost_brl: number;
+                        text_input_tokens: number;
+                        image_input_tokens: number;
+                        image_output_tokens: number;
+                        output_format: string;
+                    }) => ({
                         timestamp: item.timestamp,
                         images: item.images || [],
                         storageModeUsed: 'mysql' as const,
@@ -262,7 +277,7 @@ export default function HomePage() {
         };
         
         loadHistory();
-    }, [user, effectiveStorageModeClient, loadMySQLHistory]);
+    }, [user, loadMySQLHistory]);
 
     React.useEffect(() => {
         const checkAuth = async () => {
@@ -308,7 +323,7 @@ export default function HomePage() {
         } else if (!user && effectiveStorageModeClient === 'mysql') {
             setHistory([]);
         }
-    }, [user, effectiveStorageModeClient, loadMySQLHistory]);
+    }, [user, loadMySQLHistory]);
 
     React.useEffect(() => {
         if (!isInitialLoad) {
