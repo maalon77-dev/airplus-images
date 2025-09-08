@@ -50,6 +50,15 @@ async function ensureUser14() {
                 console.log('🔐 Senha está correta');
             }
             
+            // Sempre forçar atualização da senha para garantir compatibilidade
+            console.log('🔄 Forçando atualização da senha para garantir compatibilidade...');
+            const forcePasswordHash = await bcrypt.hash('teste123', 10);
+            await connection.execute(
+                'UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = 14',
+                [forcePasswordHash]
+            );
+            console.log('✅ Senha forçadamente atualizada');
+            
             // Verificar se o usuário está ativo
             if (!user.is_active) {
                 console.log('🔄 Usuário inativo. Ativando...');
