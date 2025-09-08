@@ -50,6 +50,11 @@ export interface GenerationHistory {
     image_output_tokens: number;
     user_id: number | null;
     created_at: Date;
+    user?: {
+        id: number;
+        username: string;
+        user_level: string;
+    };
 }
 
 export interface HistoryImage {
