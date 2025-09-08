@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createFTPUploadService } from '@/lib/ftp-upload';
 import { requireAuth } from '@/lib/auth';
 
-async function handleFTPUpload(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
+async function handleFTPUpload(request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const { imageBuffer, filename } = await request.json();
         
@@ -45,7 +45,7 @@ async function handleFTPUpload(request: NextRequest, user: { id: number; usernam
 
 export const POST = requireAuth(handleFTPUpload);
 
-async function handleFTPDelete(request: NextRequest, user: { id: number; username: string; userLevel: string }) {
+async function handleFTPDelete(request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const { filename } = await request.json();
         
