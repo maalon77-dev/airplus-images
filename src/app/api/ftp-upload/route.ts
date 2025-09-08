@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createFTPUploadService } from '@/lib/ftp-upload';
 import { requireAuth } from '@/lib/auth';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function handleFTPUpload(request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const { imageBuffer, filename } = await request.json();
@@ -45,6 +46,7 @@ async function handleFTPUpload(request: NextRequest, _user: { id: number; userna
 
 export const POST = requireAuth(handleFTPUpload);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function handleFTPDelete(request: NextRequest, _user: { id: number; username: string; userLevel: string }) {
     try {
         const { filename } = await request.json();
