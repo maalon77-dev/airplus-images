@@ -107,26 +107,9 @@ export default function HomePage() {
             console.log('📊 Estado do histórico mudou:', history.length, 'itens');
             console.log('📋 Primeiro item:', history[0]);
             
-            // Verificar se há itens antigos do MySQL que não funcionam
-            // Só limpar para usuários comuns, não para admin
-            const hasOldMySQLItems = history.some(item => 
-                item.storageModeUsed === 'mysql' && 
-                item.images.some(img => !img.filename.includes('http') && !img.filename.includes('/api/'))
-            );
-            
-            console.log('🔍 hasOldMySQLItems:', hasOldMySQLItems);
-            console.log('🔍 effectiveStorageModeClient:', effectiveStorageModeClient);
-            console.log('🔍 user?.userLevel:', user?.userLevel);
-            
-            if (hasOldMySQLItems && effectiveStorageModeClient === 'fs' && user?.userLevel !== 'ADMIN_SUPREMO') {
-                console.log('⚠️ Detectados itens antigos do MySQL. Limpando histórico para usuário comum...');
-                console.log('🔍 Detalhes:', { hasOldMySQLItems, effectiveStorageModeClient, userLevel: user?.userLevel });
-                setHistory([]);
-            } else if (hasOldMySQLItems && effectiveStorageModeClient === 'fs' && user?.userLevel === 'ADMIN_SUPREMO') {
-                console.log('✅ Admin detectado - preservando histórico com itens antigos do MySQL');
-            } else {
-                console.log('✅ Histórico preservado - condições não atendidas para limpeza');
-            }
+            // TEMPORARIAMENTE DESABILITADO: Lógica de limpeza automática
+            // O admin deve sempre ver todo o histórico, independente do storage mode
+            console.log('✅ Histórico carregado com sucesso - sem limpeza automática');
         } else {
             console.log('📊 Histórico vazio - não há itens para processar');
         }
