@@ -64,8 +64,8 @@ if (explicitModeClient === 'mysql') {
 } else if (isOnVercelClient) {
     effectiveStorageModeClient = 'indexeddb';
 } else {
-    // Forçar MySQL no desenvolvimento local
-    effectiveStorageModeClient = 'mysql';
+    // Forçar FS no desenvolvimento local (mais simples e funcional)
+    effectiveStorageModeClient = 'fs';
 }
 console.log(
     `Client Effective Storage Mode: ${effectiveStorageModeClient} (Explicit: ${explicitModeClient || 'unset'}, Vercel Env: ${vercelEnvClient || 'N/A'})`
