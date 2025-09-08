@@ -29,7 +29,7 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
             await connection.ping();
             connection.release();
             isMySQLAvailable = true;
-        } catch (error) {
+        } catch {
             console.log('⚠️ MySQL não disponível - usando dados mockados para getAuthenticatedUser');
             isMySQLAvailable = false;
         }

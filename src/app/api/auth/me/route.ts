@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
             await connection.ping();
             connection.release();
             isMySQLAvailable = true;
-        } catch (error) {
+        } catch {
             console.log('⚠️ MySQL não disponível - usando dados mockados para /api/auth/me');
             isMySQLAvailable = false;
         }

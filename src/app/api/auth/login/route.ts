@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
             await connection.ping();
             connection.release();
             isMySQLAvailable = true;
-        } catch (error) {
+        } catch {
             console.log('⚠️ MySQL não disponível - usando dados mockados para login');
             isMySQLAvailable = false;
         }
