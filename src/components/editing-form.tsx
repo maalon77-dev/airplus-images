@@ -552,7 +552,7 @@ export function EditingForm({
                                 ? 'Fechar Editor de Máscara'
                                 : editGeneratedMaskFile
                                   ? 'Editar Máscara Salva'
-                                  : 'Criar Máscara'}
+                                  : 'Editor de Máscara'}
                             {editIsMaskSaved && !editShowMaskEditor && (
                                 <span className='ml-auto text-xs text-green-400'>(Salvo)</span>
                             )}
