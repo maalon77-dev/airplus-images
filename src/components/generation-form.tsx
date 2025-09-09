@@ -163,7 +163,7 @@ export function GenerationForm({
                         </Label>
                         <Textarea
                             id='prompt'
-                            placeholder='ex: Um gato astronauta fotorealístico flutuando no espaço'
+                            placeholder=''
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                             required
