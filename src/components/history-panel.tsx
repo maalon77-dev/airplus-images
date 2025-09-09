@@ -422,68 +422,70 @@ export function HistoryPanel({
                                                     </DialogFooter>
                                                 </DialogContent>
                                             </Dialog>
-                                            <Dialog
-                                                open={itemPendingDeleteConfirmation?.timestamp === item.timestamp}
-                                                onOpenChange={(isOpen) => {
-                                                    if (!isOpen) onCancelDeletion();
-                                                }}>
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        className='h-6 w-6 bg-red-700/60 text-white hover:bg-red-600/60'
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            onDeleteItemRequest(item);
-                                                        }}
-                                                        aria-label='Delete history item'>
-                                                        <Trash2 size={14} />
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className='border-neutral-700 bg-neutral-900 text-white sm:max-w-md'>
-                                                    <DialogHeader>
-                                                        <DialogTitle className='text-white'>
-                                                            Confirm Deletion
-                                                        </DialogTitle>
-                                                        <DialogDescription className='pt-2 text-neutral-300'>
-                                                            Are you sure you want to delete this history entry? This
-                                                            will remove {item.images.length} image(s). This action
-                                                            cannot be undone.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className='flex items-center space-x-2 py-2'>
-                                                        <Checkbox
-                                                            id={`dont-ask-${item.timestamp}`}
-                                                            checked={deletePreferenceDialogValue}
-                                                            onCheckedChange={(checked) =>
-                                                                onDeletePreferenceDialogChange(!!checked)
-                                                            }
-                                                            className='border-neutral-400 bg-white data-[state=checked]:border-neutral-700 data-[state=checked]:bg-white data-[state=checked]:text-black dark:border-neutral-500 dark:!bg-white'
-                                                        />
-                                                        <label
-                                                            htmlFor={`dont-ask-${item.timestamp}`}
-                                                            className='text-sm leading-none font-medium text-neutral-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
-                                                            Don&apos;t ask me again
-                                                        </label>
-                                                    </div>
-                                                    <DialogFooter className='gap-2 sm:justify-end'>
+                                            {userLevel === 'ADMIN_SUPREMO' && (
+                                                <Dialog
+                                                    open={itemPendingDeleteConfirmation?.timestamp === item.timestamp}
+                                                    onOpenChange={(isOpen) => {
+                                                        if (!isOpen) onCancelDeletion();
+                                                    }}>
+                                                    <DialogTrigger asChild>
                                                         <Button
-                                                            type='button'
-                                                            variant='outline'
-                                                            size='sm'
-                                                            onClick={onCancelDeletion}
-                                                            className='border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-white'>
-                                                            Cancel
+                                                            className='h-6 w-6 bg-red-700/60 text-white hover:bg-red-600/60'
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onDeleteItemRequest(item);
+                                                            }}
+                                                            aria-label='Delete history item'>
+                                                            <Trash2 size={14} />
                                                         </Button>
-                                                        <Button
-                                                            type='button'
-                                                            variant='destructive'
-                                                            size='sm'
-                                                            onClick={onConfirmDeletion}
-                                                            className='bg-red-600 text-white hover:bg-red-500'>
-                                                            Delete
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
+                                                    </DialogTrigger>
+                                                    <DialogContent className='border-neutral-700 bg-neutral-900 text-white sm:max-w-md'>
+                                                        <DialogHeader>
+                                                            <DialogTitle className='text-white'>
+                                                                Confirm Deletion
+                                                            </DialogTitle>
+                                                            <DialogDescription className='pt-2 text-neutral-300'>
+                                                                Are you sure you want to delete this history entry? This
+                                                                will remove {item.images.length} image(s). This action
+                                                                cannot be undone.
+                                                            </DialogDescription>
+                                                        </DialogHeader>
+                                                        <div className='flex items-center space-x-2 py-2'>
+                                                            <Checkbox
+                                                                id={`dont-ask-${item.timestamp}`}
+                                                                checked={deletePreferenceDialogValue}
+                                                                onCheckedChange={(checked) =>
+                                                                    onDeletePreferenceDialogChange(!!checked)
+                                                                }
+                                                                className='border-neutral-400 bg-white data-[state=checked]:border-neutral-700 data-[state=checked]:bg-white data-[state=checked]:text-black dark:border-neutral-500 dark:!bg-white'
+                                                            />
+                                                            <label
+                                                                htmlFor={`dont-ask-${item.timestamp}`}
+                                                                className='text-sm leading-none font-medium text-neutral-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                                                                Don&apos;t ask me again
+                                                            </label>
+                                                        </div>
+                                                        <DialogFooter className='gap-2 sm:justify-end'>
+                                                            <Button
+                                                                type='button'
+                                                                variant='outline'
+                                                                size='sm'
+                                                                onClick={onCancelDeletion}
+                                                                className='border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-white'>
+                                                                Cancel
+                                                            </Button>
+                                                            <Button
+                                                                type='button'
+                                                                variant='destructive'
+                                                                size='sm'
+                                                                onClick={onConfirmDeletion}
+                                                                className='bg-red-600 text-white hover:bg-red-500'>
+                                                                Delete
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
