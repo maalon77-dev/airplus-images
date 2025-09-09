@@ -99,12 +99,10 @@ export default function HomePage() {
     const [imageOutputView, setImageOutputView] = React.useState<'grid' | number>('grid');
     const [history, setHistory] = React.useState<HistoryMetadata[]>([]);
     
-    // Log para monitorar mudanças no estado do histórico
+    // Log otimizado para monitorar mudanças no estado do histórico
     React.useEffect(() => {
         if (history.length > 0) {
-            console.log('📊 Estado do histórico mudou:', history.length, 'itens');
-            console.log('👤 Usuário atual:', user?.username, 'Nível:', user?.userLevel);
-            console.log('✅ Histórico carregado com sucesso');
+            console.log(`📊 Histórico: ${history.length} itens | Usuário: ${user?.username || 'N/A'} (${user?.userLevel || 'N/A'})`);
         }
     }, [history.length, user?.username, user?.userLevel]);
     const [isInitialLoad, setIsInitialLoad] = React.useState(true);
@@ -179,13 +177,7 @@ export default function HomePage() {
                 }
             });
         };
-    }, [blobUrlCache]);
-
-    React.useEffect(() => {
-        return () => {
-            editSourceImagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
-        };
-    }, [editSourceImagePreviewUrls]);
+    }, []); // Remove blobUrlCache das dependências para evitar loops
 
     // Função para carregar histórico do MySQL
     const loadMySQLHistory = React.useCallback(async () => {
@@ -195,17 +187,14 @@ export default function HomePage() {
         }
         
         try {
-            console.log('🔄 Carregando histórico do MySQL para usuário:', user.username, 'ID:', user.id);
+            console.log(`🔄 Carregando histórico MySQL: ${user.username} (ID: ${user.id})`);
             const response = await fetch('/api/mysql-history', {
                 credentials: 'include' // Garantir que cookies sejam enviados
             });
-            console.log('📡 Response status:', response.status, response.ok);
             
             if (response.ok) {
                 const data = await response.json();
-                console.log('📊 Dados recebidos da API:', data);
-                console.log('📊 data.success:', data.success);
-                console.log('📊 data.history length:', data.history?.length);
+                console.log(`📊 Histórico MySQL: ${data.history?.length || 0} itens recebidos`);
                 
                 if (data.success && data.history) {
                     // Converter o formato do MySQL para o formato esperado pelo frontend
@@ -249,13 +238,8 @@ export default function HomePage() {
                         output_format: item.output_format || 'png',
                         user: item.user
                     }));
-                    console.log('✅ Histórico convertido:', convertedHistory.length, 'itens');
-                    console.log('📋 Detalhes do histórico:', convertedHistory);
-                    
-                    // FORÇAR ATUALIZAÇÃO DO ESTADO - SEM DELAY
-                    console.log('🎯 Definindo histórico DIRETAMENTE:', convertedHistory.length, 'itens');
+                    console.log(`✅ Histórico convertido: ${convertedHistory.length} itens`);
                     setHistory(convertedHistory);
-                    console.log('✅ Histórico definido com sucesso!');
                 } else {
                     console.log('❌ Nenhum histórico encontrado no MySQL');
                     setHistory([]);
@@ -338,23 +322,20 @@ export default function HomePage() {
     React.useEffect(() => {
         const checkAuth = async () => {
             try {
-                console.log('🔐 Verificando autenticação...');
                 const response = await fetch('/api/auth/me', {
                     credentials: 'include' // Garantir que cookies sejam enviados
                 });
-                console.log('🔐 Response auth status:', response.status, response.ok);
                 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('🔐 Dados de autenticação:', data);
+                    console.log(`🔐 Autenticado: ${data.user?.username} (${data.user?.userLevel})`);
                     setUser(data.user);
-                    console.log('🔐 Usuário definido:', data.user);
                 } else {
                     console.log('🔐 Usuário não autenticado');
                     setUser(null);
                 }
             } catch (error) {
-                console.error('❌ Erro ao verificar autenticação:', error);
+                console.error('❌ Erro de autenticação:', error);
                 setUser(null);
             } finally {
                 setIsCheckingAuth(false);
@@ -392,8 +373,9 @@ export default function HomePage() {
         }
     }, [user, loadMySQLHistory]);
 
-    React.useEffect(() => {
-        if (!isInitialLoad) {
+    // Salvar histórico no localStorage de forma otimizada
+    const saveHistoryToStorage = React.useCallback(() => {
+        if (!isInitialLoad && history.length > 0) {
             try {
                 localStorage.setItem('openaiImageHistory', JSON.stringify(history));
             } catch (e) {
@@ -401,6 +383,12 @@ export default function HomePage() {
             }
         }
     }, [history, isInitialLoad]);
+
+    React.useEffect(() => {
+        // Usar debounce para evitar salvar constantemente
+        const timeoutId = setTimeout(saveHistoryToStorage, 500);
+        return () => clearTimeout(timeoutId);
+    }, [saveHistoryToStorage]);
 
     React.useEffect(() => {
         return () => {
