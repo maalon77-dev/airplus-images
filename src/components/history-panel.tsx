@@ -192,7 +192,15 @@ export function HistoryPanel({
                             if (firstImage) {
                                 if (originalStorageMode === 'indexeddb') {
                                     thumbnailUrl = getImageSrc(firstImage.filename);
+                                } else if (originalStorageMode === 'mysql' || originalStorageMode === 'ftp') {
+                                    // Verificar se é um arquivo mockado
+                                    if (firstImage.filename.startsWith('mock-')) {
+                                        thumbnailUrl = `/api/placeholder-image?text=${encodeURIComponent(item.mode === 'edit' ? 'Edit' : 'Generate')}`;
+                                    } else {
+                                        thumbnailUrl = `/api/mysql-images?filename=${encodeURIComponent(firstImage.filename)}`;
+                                    }
                                 } else {
+                                    // fs mode
                                     thumbnailUrl = `/api/image/${firstImage.filename}`;
                                 }
                             }
