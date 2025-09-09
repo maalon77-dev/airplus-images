@@ -159,7 +159,7 @@ export function GenerationForm({
                 <CardContent className='flex-1 space-y-5 overflow-y-auto p-4'>
                     <div className='space-y-1.5'>
                         <Label htmlFor='prompt' className='text-white'>
-                            Prompt
+                            Instruções de modificação
                         </Label>
                         <Textarea
                             id='prompt'

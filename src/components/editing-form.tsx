@@ -477,11 +477,11 @@ export function EditingForm({
                 <CardContent className='flex-1 space-y-5 overflow-y-auto p-4'>
                     <div className='space-y-1.5'>
                         <Label htmlFor='edit-prompt' className='text-white'>
-                            Prompt
+                            Instruções de modificação
                         </Label>
                         <Textarea
                             id='edit-prompt'
-                            placeholder='ex: Adicione um chapéu de festa ao personagem principal'
+                            placeholder='ex: Melhore a iluminação e cores da imagem'
                             value={editPrompt}
                             onChange={(e) => setEditPrompt(e.target.value)}
                             required
