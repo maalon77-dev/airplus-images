@@ -126,11 +126,6 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                             )}
                         </Button>
                     </form>
-
-                    <div className="mt-6 text-center text-sm text-neutral-400">
-                        <p>Usuário padrão: <span className="text-white">admin</span></p>
-                        <p>Senha padrão: <span className="text-white">admin123</span></p>
-                    </div>
                 </CardContent>
             </Card>
         </div>
