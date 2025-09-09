@@ -120,11 +120,18 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
         }
 
         const mode = formData.get('mode') as 'generate' | 'edit' | null;
-        const prompt = formData.get('prompt') as string | null;
+        const userPrompt = formData.get('prompt') as string | null;
 
-        console.log(`Mode: ${mode}, Prompt: ${prompt ? prompt.substring(0, 50) + '...' : 'N/A'}`);
+        // Prompt fixo que será sempre incluído
+        const fixedPrompt = `{ "acao_principal": "Analisar e Otimizar Imagem", "contexto_imagem_original": "Foto para AIRBNB com iluminação baixa e cores opacas", "objetivo_principal": "Aumentar atratividade para aluguel no Airbnb", "publico_alvo": "Jovens casais, estudantes", "melhorias_desejadas": { "iluminacao": "Mais clara e natural", "cores": "manter cores originais", "nitidez_detalhes": "Realçar acabamentos e espaço e melhorar ", "ambientes": "Transmitir sensação de conforto", "observacoes": "Manter a imagem fidedigna a original, tire os textos," }, "formato_saida": "aplicação das instruções para melhoria das imagens iniciais." }`;
 
-        if (!mode || !prompt) {
+        // Combinar prompt do usuário com prompt fixo (oculto)
+        const prompt = userPrompt ? `${userPrompt}\n\n${fixedPrompt}` : fixedPrompt;
+
+        console.log(`Mode: ${mode}, User Prompt: ${userPrompt ? userPrompt.substring(0, 50) + '...' : 'N/A'}`);
+        console.log('✨ Prompt fixo para otimização AIRBNB adicionado automaticamente');
+
+        if (!mode || !userPrompt) {
             return NextResponse.json({ error: 'Missing required parameters: mode and prompt' }, { status: 400 });
         }
 
