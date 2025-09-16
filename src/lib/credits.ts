@@ -191,7 +191,13 @@ export async function addCredits(
 /**
  * Calcular custo em créditos baseado no uso da API
  */
-export function calculateCreditsFromUsage(usage: any): number {
+export function calculateCreditsFromUsage(usage: {
+    input_tokens_details?: {
+        text_tokens?: number;
+        image_tokens?: number;
+    };
+    output_tokens?: number;
+} | null | undefined): number {
     if (!usage || !usage.input_tokens_details || usage.output_tokens === undefined) {
         return 1; // Custo mínimo de 1 crédito
     }

@@ -7,9 +7,9 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 // Configuração do Stripe no cliente
-export const getStripe = () => {
+export const getStripe = async () => {
     if (typeof window !== 'undefined') {
-        const { loadStripe } = require('@stripe/stripe-js');
+        const { loadStripe } = await import('@stripe/stripe-js');
         return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
     }
     return null;
