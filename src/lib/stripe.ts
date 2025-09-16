@@ -88,11 +88,11 @@ export async function createPaymentIntent(
 // Função para buscar plano de pagamento
 async function getPaymentPlan(planId: number): Promise<PaymentPlan | null> {
     try {
-        const { default: MySQLDatabase } = await import('./mysql-db');
-        const db = new MySQLDatabase();
-        await db.connect();
+        const { pool } = await import('./mysql-db');
+        const connection = await pool.getConnection();
+        
 
-        const [plans] = await db.connection.execute(`
+        const [plans] = await connection.execute(`
             SELECT 
                 id,
                 name,
@@ -106,7 +106,7 @@ async function getPaymentPlan(planId: number): Promise<PaymentPlan | null> {
             WHERE id = ? AND is_active = true
         `, [planId]);
 
-        await db.disconnect();
+        connection.release();
 
         if (!Array.isArray(plans) || plans.length === 0) {
             return null;
@@ -156,12 +156,12 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         console.log(`Pagamento bem-sucedido: ${paymentIntent.id}`);
         console.log(`Usuário: ${user_id}, Plano: ${plan_id}, Créditos: ${credits_included}`);
         
-        const { default: MySQLDatabase } = await import('./mysql-db');
-        const db = new MySQLDatabase();
-        await db.connect();
+        const { pool } = await import('./mysql-db');
+        const connection = await pool.getConnection();
+        
 
         // 1. Atualizar status do pagamento no banco
-        await db.connection.execute(`
+        await connection.execute(`
             UPDATE payments 
             SET status = 'succeeded' 
             WHERE stripe_payment_intent_id = ?
@@ -171,13 +171,13 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         const credits = parseInt(credits_included);
         
         // Verificar se usuário já tem registro de créditos
-        const [existingCredits] = await db.connection.execute(`
+        const [existingCredits] = await connection.execute(`
             SELECT id FROM user_credits WHERE user_id = ?
         `, [user_id]);
 
         if (Array.isArray(existingCredits) && existingCredits.length > 0) {
             // Atualizar créditos existentes
-            await db.connection.execute(`
+            await connection.execute(`
                 UPDATE user_credits 
                 SET 
                     credits_balance = credits_balance + ?,
@@ -186,21 +186,21 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
             `, [credits, credits, user_id]);
         } else {
             // Criar novo registro de créditos
-            await db.connection.execute(`
+            await connection.execute(`
                 INSERT INTO user_credits (user_id, credits_balance, total_credits_earned)
                 VALUES (?, ?, ?)
             `, [user_id, credits, credits]);
         }
 
         // 3. Registrar transação de créditos
-        await db.connection.execute(`
+        await connection.execute(`
             INSERT INTO credit_transactions 
             (user_id, transaction_type, amount, description, related_payment_id)
             VALUES (?, 'earned', ?, 'Créditos adquiridos via pagamento', 
                 (SELECT id FROM payments WHERE stripe_payment_intent_id = ?))
         `, [user_id, credits, paymentIntent.id]);
 
-        await db.disconnect();
+        connection.release();
         
         console.log(`✅ Créditos adicionados com sucesso: ${credits} para usuário ${user_id}`);
         
@@ -214,18 +214,18 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
     try {
         console.log(`Pagamento falhado: ${paymentIntent.id}`);
         
-        const { default: MySQLDatabase } = await import('./mysql-db');
-        const db = new MySQLDatabase();
-        await db.connect();
+        const { pool } = await import('./mysql-db');
+        const connection = await pool.getConnection();
+        
 
         // 1. Atualizar status do pagamento no banco
-        await db.connection.execute(`
+        await connection.execute(`
             UPDATE payments 
             SET status = 'failed' 
             WHERE stripe_payment_intent_id = ?
         `, [paymentIntent.id]);
 
-        await db.disconnect();
+        connection.release();
         
         console.log(`❌ Status do pagamento atualizado para 'failed': ${paymentIntent.id}`);
         
