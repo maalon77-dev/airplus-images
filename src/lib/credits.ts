@@ -59,7 +59,7 @@ export async function hasEnoughCredits(userId: number, requiredCredits: number):
 /**
  * Usar créditos de um usuário
  */
-export async function useCredits(
+export async function consumeCredits(
     userId: number, 
     creditsToUse: number, 
     description: string,

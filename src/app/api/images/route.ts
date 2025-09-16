@@ -6,7 +6,7 @@ import path from 'path';
 import MySQLDatabase from '@/lib/mysql-db';
 import { requireAuth } from '@/lib/auth';
 import { createFTPUploadService } from '@/lib/ftp-upload';
-import { hasEnoughCredits, useCredits, calculateCreditsFromUsage } from '@/lib/credits';
+import { hasEnoughCredits, consumeCredits, calculateCreditsFromUsage } from '@/lib/credits';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
@@ -292,7 +292,7 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
 
         // Calcular e usar créditos baseado no uso real da API
         const actualCreditsUsed = calculateCreditsFromUsage(result.usage);
-        const creditResult = await useCredits(
+        const creditResult = await consumeCredits(
             user.id,
             actualCreditsUsed,
             `Geração de ${savedImagesData.length} imagem(ns) - ${mode}`,
