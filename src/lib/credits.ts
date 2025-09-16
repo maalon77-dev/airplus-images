@@ -1,4 +1,3 @@
-import MySQLDatabase from './mysql-db';
 
 export interface CreditsBalance {
     credits_balance: number;
