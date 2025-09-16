@@ -22,10 +22,10 @@ export interface CreditTransaction {
  */
 export async function getUserCredits(userId: number): Promise<CreditsBalance | null> {
     try {
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
-        const [credits] = await db.connection.execute(`
+        const [credits] = await connection.execute(`
             SELECT 
                 credits_balance,
                 total_credits_earned,
@@ -35,7 +35,7 @@ export async function getUserCredits(userId: number): Promise<CreditsBalance | n
             WHERE user_id = ?
         `, [userId]);
 
-        await db.disconnect();
+        connection.release();
 
         if (!Array.isArray(credits) || credits.length === 0) {
             return null;
@@ -66,11 +66,11 @@ export async function consumeCredits(
     generationId?: number
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
     try {
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
         // Verificar saldo atual
-        const [currentCredits] = await db.connection.execute(`
+        const [currentCredits] = await connection.execute(`
             SELECT credits_balance FROM user_credits WHERE user_id = ?
         `, [userId]);
 
@@ -80,7 +80,7 @@ export async function consumeCredits(
         }
 
         if (currentBalance < creditsToUse) {
-            await db.disconnect();
+            connection.release();
             return {
                 success: false,
                 error: `Créditos insuficientes. Disponível: ${currentBalance}, Necessário: ${creditsToUse}`
@@ -91,7 +91,7 @@ export async function consumeCredits(
 
         // Atualizar ou criar registro de créditos
         if (Array.isArray(currentCredits) && currentCredits.length > 0) {
-            await db.connection.execute(`
+            await connection.execute(`
                 UPDATE user_credits 
                 SET 
                     credits_balance = ?,
@@ -99,20 +99,20 @@ export async function consumeCredits(
                 WHERE user_id = ?
             `, [newBalance, creditsToUse, userId]);
         } else {
-            await db.connection.execute(`
+            await connection.execute(`
                 INSERT INTO user_credits (user_id, credits_balance, total_credits_used)
                 VALUES (?, ?, ?)
             `, [userId, newBalance, creditsToUse]);
         }
 
         // Registrar transação
-        await db.connection.execute(`
+        await connection.execute(`
             INSERT INTO credit_transactions 
             (user_id, transaction_type, amount, description, related_generation_id)
             VALUES (?, 'used', ?, ?, ?)
         `, [userId, creditsToUse, description, generationId]);
 
-        await db.disconnect();
+        connection.release();
 
         return {
             success: true,
@@ -138,11 +138,11 @@ export async function addCredits(
     paymentId?: number
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
     try {
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
         // Verificar se usuário já tem registro de créditos
-        const [existingCredits] = await db.connection.execute(`
+        const [existingCredits] = await connection.execute(`
             SELECT credits_balance FROM user_credits WHERE user_id = ?
         `, [userId]);
 
@@ -151,7 +151,7 @@ export async function addCredits(
             const currentBalance = (existingCredits[0] as { credits_balance: number }).credits_balance;
             newBalance = currentBalance + creditsToAdd;
 
-            await db.connection.execute(`
+            await connection.execute(`
                 UPDATE user_credits 
                 SET 
                     credits_balance = ?,
@@ -159,20 +159,20 @@ export async function addCredits(
                 WHERE user_id = ?
             `, [newBalance, creditsToAdd, userId]);
         } else {
-            await db.connection.execute(`
+            await connection.execute(`
                 INSERT INTO user_credits (user_id, credits_balance, total_credits_earned)
                 VALUES (?, ?, ?)
             `, [userId, creditsToAdd, creditsToAdd]);
         }
 
         // Registrar transação
-        await db.connection.execute(`
+        await connection.execute(`
             INSERT INTO credit_transactions 
             (user_id, transaction_type, amount, description, related_payment_id)
             VALUES (?, 'earned', ?, ?, ?)
         `, [userId, creditsToAdd, description, paymentId]);
 
-        await db.disconnect();
+        connection.release();
 
         return {
             success: true,
