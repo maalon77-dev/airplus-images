@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 
 // GET /api/credits/balance - Obter saldo de créditos do usuário
 export async function GET(request: NextRequest) {
@@ -14,11 +14,10 @@ export async function GET(request: NextRequest) {
             );
         }
         
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
 
         // Buscar saldo de créditos do usuário
-        const [credits] = await db.connection.execute(`
+        const [credits] = await connection.execute(`
             SELECT 
                 credits_balance,
                 total_credits_earned,
@@ -28,7 +27,7 @@ export async function GET(request: NextRequest) {
             WHERE user_id = ?
         `, [user.id]);
 
-        await db.disconnect();
+        connection.release();
 
         if (!Array.isArray(credits) || credits.length === 0) {
             // Usuário não tem registro de créditos, criar com saldo zero

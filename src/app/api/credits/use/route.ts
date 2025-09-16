@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 
 // POST /api/credits/use - Usar créditos para geração de imagem
 export async function POST(request: NextRequest) {
@@ -23,11 +23,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
 
         // Verificar saldo atual
-        const [currentCredits] = await db.connection.execute(`
+        const [currentCredits] = await connection.execute(`
             SELECT credits_balance FROM user_credits WHERE user_id = ?
         `, [user.id]);
 
@@ -37,7 +36,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (currentBalance < credits_to_use) {
-            await db.disconnect();
+            connection.release();
             return NextResponse.json(
                 { 
                     success: false, 
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest) {
 
         if (Array.isArray(currentCredits) && currentCredits.length > 0) {
             // Atualizar créditos existentes
-            await db.connection.execute(`
+            await connection.execute(`
                 UPDATE user_credits 
                 SET 
                     credits_balance = ?,
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
             `, [newBalance, credits_to_use, user.id]);
         } else {
             // Criar novo registro (não deveria acontecer, mas por segurança)
-            await db.connection.execute(`
+            await connection.execute(`
                 INSERT INTO user_credits (user_id, credits_balance, total_credits_used)
                 VALUES (?, ?, ?)
             `, [user.id, newBalance, credits_to_use]);
@@ -76,7 +75,7 @@ export async function POST(request: NextRequest) {
             VALUES (?, 'used', ?, ?, ?)
         `, [user.id, credits_to_use, description || 'Uso de créditos para geração de imagem', generation_id]);
 
-        await db.disconnect();
+        connection.release();
 
         return NextResponse.json({
             success: true,
