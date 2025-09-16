@@ -1,3 +1,4 @@
+import { MySQLDatabase } from "@/lib/mysql-db";
 import { NextResponse } from 'next/server';
 
 // GET - Testar conexão com MySQL

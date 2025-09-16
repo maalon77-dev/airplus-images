@@ -1,3 +1,4 @@
+import { MySQLDatabase } from "@/lib/mysql-db";
 import { NextRequest, NextResponse } from 'next/server';
 import { MySQLDatabase, pool } from '@/lib/mysql-db';
 import { requireAdmin } from '@/lib/auth';
