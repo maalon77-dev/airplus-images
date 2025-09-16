@@ -6,6 +6,7 @@ import path from 'path';
 import { requireAuth } from '@/lib/auth';
 import { createFTPUploadService } from '@/lib/ftp-upload';
 import { hasEnoughCredits, consumeCredits, calculateCreditsFromUsage } from '@/lib/credits';
+import { MySQLDatabase } from '@/lib/mysql-db';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
