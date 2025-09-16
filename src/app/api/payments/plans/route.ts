@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { pool } from '@/lib/mysql-db';
 
 // GET /api/payments/plans - Listar planos de pagamento disponíveis
@@ -41,7 +41,14 @@ export async function GET() {
 // POST /api/payments/plans - Criar novo plano (apenas ADMIN_SUPREMO)
 export async function POST(request: NextRequest) {
     try {
-        const user = await requireAuth(request);
+        const user = await getAuthenticatedUser(request);
+        
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'Não autorizado' },
+                { status: 401 }
+            );
+        }
         
         if (user.userLevel !== 'ADMIN_SUPREMO') {
             return NextResponse.json(
