@@ -1,4 +1,6 @@
 
+import { pool } from './mysql-db';
+
 export interface CreditsBalance {
     credits_balance: number;
     total_credits_earned: number;
