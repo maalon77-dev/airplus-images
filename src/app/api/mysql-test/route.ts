@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/lib/mysql-db';
 
 // GET - Testar conexão com MySQL
 export async function GET() {
