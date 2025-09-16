@@ -119,7 +119,13 @@ export default function HomePage() {
     
     // Estados para pagamentos
     const [showPaymentPlans, setShowPaymentPlans] = React.useState(false);
-    const [selectedPlan, setSelectedPlan] = React.useState<any>(null);
+    const [selectedPlan, setSelectedPlan] = React.useState<{
+        id: number;
+        name: string;
+        price_usd: number;
+        price_brl: number;
+        credits_included: number;
+    } | null>(null);
     const [selectedCurrency, setSelectedCurrency] = React.useState<'usd' | 'brl'>('brl');
     const [showCheckout, setShowCheckout] = React.useState(false);
 
@@ -186,7 +192,7 @@ export default function HomePage() {
                 }
             });
         };
-    }, []); // Remove blobUrlCache das dependências para evitar loops
+    }, [blobUrlCache]);
 
     // Função para carregar histórico do MySQL
     const loadMySQLHistory = React.useCallback(async () => {
@@ -1005,7 +1011,13 @@ export default function HomePage() {
     };
 
     // Funções para gerenciar pagamentos
-    const handleSelectPlan = (plan: any, currency: 'usd' | 'brl') => {
+    const handleSelectPlan = (plan: {
+        id: number;
+        name: string;
+        price_usd: number;
+        price_brl: number;
+        credits_included: number;
+    }, currency: 'usd' | 'brl') => {
         setSelectedPlan(plan);
         setSelectedCurrency(currency);
         setShowCheckout(true);

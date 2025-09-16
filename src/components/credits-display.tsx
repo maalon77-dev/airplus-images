@@ -38,7 +38,7 @@ export function CreditsDisplay({ onShowPaymentPlans }: CreditsDisplayProps) {
             } else {
                 setError('Erro ao carregar créditos');
             }
-        } catch (err) {
+        } catch {
             setError('Erro de conexão');
         } finally {
             setLoading(false);

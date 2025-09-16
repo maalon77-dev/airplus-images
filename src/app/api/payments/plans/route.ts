@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import MySQLDatabase from '@/lib/mysql-db';
 
 // GET /api/payments/plans - Listar planos de pagamento disponíveis
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const db = new MySQLDatabase();
         await db.connect();
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            plan_id: (result as any).insertId,
+            plan_id: (result as { insertId: number }).insertId,
             message: 'Plano criado com sucesso'
         });
 

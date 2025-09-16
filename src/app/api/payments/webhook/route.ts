@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, handleStripeWebhook } from '@/lib/stripe';
-import MySQLDatabase from '@/lib/mysql-db';
 
 // POST /api/payments/webhook - Webhook do Stripe
 export async function POST(request: NextRequest) {

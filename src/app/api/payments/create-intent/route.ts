@@ -49,8 +49,15 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const plan = plans[0] as any;
-        const amount = currency === 'usd' ? plan.price_usd : plan.price_brl;
+        const plan = plans[0] as {
+            id: number;
+            name: string;
+            price_usd: number;
+            price_brl: number;
+            credits_included: number;
+            stripe_price_id_usd: string;
+            stripe_price_id_brl: string;
+        };
         const stripePriceId = currency === 'usd' 
             ? plan.stripe_price_id_usd 
             : plan.stripe_price_id_brl;

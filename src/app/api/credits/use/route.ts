@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
         let currentBalance = 0;
         if (Array.isArray(currentCredits) && currentCredits.length > 0) {
-            currentBalance = (currentCredits[0] as any).credits_balance;
+            currentBalance = (currentCredits[0] as { credits_balance: number }).credits_balance;
         }
 
         if (currentBalance < credits_to_use) {

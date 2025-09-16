@@ -88,7 +88,7 @@ export async function createPaymentIntent(
 // Função para buscar plano de pagamento
 async function getPaymentPlan(planId: number): Promise<PaymentPlan | null> {
     try {
-        const MySQLDatabase = require('./mysql-db').default;
+        const { default: MySQLDatabase } = await import('./mysql-db');
         const db = new MySQLDatabase();
         await db.connect();
 
@@ -156,7 +156,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         console.log(`Pagamento bem-sucedido: ${paymentIntent.id}`);
         console.log(`Usuário: ${user_id}, Plano: ${plan_id}, Créditos: ${credits_included}`);
         
-        const MySQLDatabase = require('./mysql-db').default;
+        const { default: MySQLDatabase } = await import('./mysql-db');
         const db = new MySQLDatabase();
         await db.connect();
 
@@ -214,7 +214,7 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
     try {
         console.log(`Pagamento falhado: ${paymentIntent.id}`);
         
-        const MySQLDatabase = require('./mysql-db').default;
+        const { default: MySQLDatabase } = await import('./mysql-db');
         const db = new MySQLDatabase();
         await db.connect();
 

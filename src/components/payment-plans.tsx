@@ -41,7 +41,7 @@ export function PaymentPlans({ onSelectPlan, isLoading = false }: PaymentPlansPr
             } else {
                 setError('Erro ao carregar planos de pagamento');
             }
-        } catch (err) {
+        } catch {
             setError('Erro de conexão');
         } finally {
             setLoading(false);

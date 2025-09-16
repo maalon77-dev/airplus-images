@@ -76,7 +76,7 @@ export async function useCredits(
 
         let currentBalance = 0;
         if (Array.isArray(currentCredits) && currentCredits.length > 0) {
-            currentBalance = (currentCredits[0] as any).credits_balance;
+            currentBalance = (currentCredits[0] as { credits_balance: number }).credits_balance;
         }
 
         if (currentBalance < creditsToUse) {
@@ -148,7 +148,7 @@ export async function addCredits(
 
         let newBalance = creditsToAdd;
         if (Array.isArray(existingCredits) && existingCredits.length > 0) {
-            const currentBalance = (existingCredits[0] as any).credits_balance;
+            const currentBalance = (existingCredits[0] as { credits_balance: number }).credits_balance;
             newBalance = currentBalance + creditsToAdd;
 
             await db.connection.execute(`

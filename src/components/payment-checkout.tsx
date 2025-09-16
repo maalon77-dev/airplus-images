@@ -24,7 +24,7 @@ export function PaymentCheckout({ isOpen, onClose, plan, currency }: PaymentChec
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
-    const [stripe, setStripe] = useState<any>(null);
+    const [stripe, setStripe] = useState<unknown>(null);
 
     useEffect(() => {
         const initializeStripe = async () => {

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         await db.disconnect();
 
         const total = Array.isArray(countResult) && countResult.length > 0 
-            ? (countResult[0] as any).total 
+            ? (countResult[0] as { total: number }).total 
             : 0;
 
         return NextResponse.json({
