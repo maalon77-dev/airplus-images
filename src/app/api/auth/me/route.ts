@@ -1,4 +1,3 @@
-import { MySQLDatabase } from "@/lib/mysql-db";
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { MySQLDatabase } from '@/lib/mysql-db';
