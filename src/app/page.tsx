@@ -8,6 +8,9 @@ import { PasswordDialog } from '@/components/password-dialog';
 import { LoginForm } from '@/components/login-form';
 import { UserHeader } from '@/components/user-header';
 import { UserManagement } from '@/components/user-management';
+import { CreditsDisplay } from '@/components/credits-display';
+import { PaymentPlans } from '@/components/payment-plans';
+import { PaymentCheckout } from '@/components/payment-checkout';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { calculateApiCost, type CostDetails } from '@/lib/cost-utils';
 import { db, type ImageRecord } from '@/lib/db';
@@ -113,6 +116,12 @@ export default function HomePage() {
     const [skipDeleteConfirmation, setSkipDeleteConfirmation] = React.useState<boolean>(false);
     const [itemToDeleteConfirm, setItemToDeleteConfirm] = React.useState<HistoryMetadata | null>(null);
     const [dialogCheckboxStateSkipConfirm, setDialogCheckboxStateSkipConfirm] = React.useState<boolean>(false);
+    
+    // Estados para pagamentos
+    const [showPaymentPlans, setShowPaymentPlans] = React.useState(false);
+    const [selectedPlan, setSelectedPlan] = React.useState<any>(null);
+    const [selectedCurrency, setSelectedCurrency] = React.useState<'usd' | 'brl'>('brl');
+    const [showCheckout, setShowCheckout] = React.useState(false);
 
     const allDbImages = useLiveQuery<ImageRecord[] | undefined>(() => db.images.toArray(), []);
 
@@ -567,9 +576,15 @@ export default function HomePage() {
                     setPasswordDialogContext('retry');
                     setLastApiCallArgs([formData]);
                     setIsPasswordDialogOpen(true);
-
                     return;
                 }
+                
+                if (response.status === 402 && result.error_code === 'INSUFFICIENT_CREDITS') {
+                    setError('Créditos insuficientes. Adicione créditos para continuar gerando imagens.');
+                    setShowPaymentPlans(true);
+                    return;
+                }
+                
                 throw new Error(result.error || `API request failed with status ${response.status}`);
             }
 
@@ -989,6 +1004,26 @@ export default function HomePage() {
         setError(null);
     };
 
+    // Funções para gerenciar pagamentos
+    const handleSelectPlan = (plan: any, currency: 'usd' | 'brl') => {
+        setSelectedPlan(plan);
+        setSelectedCurrency(currency);
+        setShowCheckout(true);
+    };
+
+    const handleCloseCheckout = () => {
+        setShowCheckout(false);
+        setSelectedPlan(null);
+    };
+
+    const handleShowPaymentPlans = () => {
+        setShowPaymentPlans(true);
+    };
+
+    const handleClosePaymentPlans = () => {
+        setShowPaymentPlans(false);
+    };
+
     // Mostrar tela de carregamento enquanto verifica autenticação
     if (isCheckingAuth) {
         return (
@@ -1026,6 +1061,9 @@ export default function HomePage() {
                 {user.userLevel === 'ADMIN_SUPREMO' && (
                     <UserManagement currentUser={user} />
                 )}
+                
+                {/* Display de Créditos */}
+                <CreditsDisplay onShowPaymentPlans={handleShowPaymentPlans} />
                 
                 <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
                     <div className='relative flex h-[70vh] min-h-[600px] flex-col lg:col-span-1'>
@@ -1132,6 +1170,39 @@ export default function HomePage() {
                 />
             </div>
             </div>
+            
+            {/* Modal de Planos de Pagamento */}
+            {showPaymentPlans && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-900 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-white">Planos de Pagamento</h2>
+                                <button
+                                    onClick={handleClosePaymentPlans}
+                                    className="text-gray-400 hover:text-white text-2xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <PaymentPlans 
+                                onSelectPlan={handleSelectPlan}
+                                isLoading={false}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Modal de Checkout */}
+            {showCheckout && selectedPlan && (
+                <PaymentCheckout
+                    isOpen={showCheckout}
+                    onClose={handleCloseCheckout}
+                    plan={selectedPlan}
+                    currency={selectedCurrency}
+                />
+            )}
         </main>
     );
 }

@@ -6,6 +6,7 @@ import path from 'path';
 import MySQLDatabase from '@/lib/mysql-db';
 import { requireAuth } from '@/lib/auth';
 import { createFTPUploadService } from '@/lib/ftp-upload';
+import { hasEnoughCredits, useCredits, calculateCreditsFromUsage } from '@/lib/credits';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-temp-key-for-build',
@@ -133,6 +134,18 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
 
         if (!mode || !userPrompt) {
             return NextResponse.json({ error: 'Missing required parameters: mode and prompt' }, { status: 400 });
+        }
+
+        // Verificar se usuário tem créditos suficientes (estimativa de 1-3 créditos)
+        const estimatedCredits = 2; // Estimativa conservadora
+        const hasCredits = await hasEnoughCredits(user.id, estimatedCredits);
+        
+        if (!hasCredits) {
+            return NextResponse.json({ 
+                error: 'Créditos insuficientes. Adicione créditos para continuar gerando imagens.',
+                error_code: 'INSUFFICIENT_CREDITS',
+                required_credits: estimatedCredits
+            }, { status: 402 }); // 402 Payment Required
         }
 
         let result: OpenAI.Images.ImagesResponse;
@@ -277,7 +290,28 @@ async function handleImageGeneration(request: NextRequest, user: { id: number; u
 
         console.log(`All images processed. Mode: ${effectiveStorageMode}`);
 
-        return NextResponse.json({ images: savedImagesData, usage: result.usage });
+        // Calcular e usar créditos baseado no uso real da API
+        const actualCreditsUsed = calculateCreditsFromUsage(result.usage);
+        const creditResult = await useCredits(
+            user.id,
+            actualCreditsUsed,
+            `Geração de ${savedImagesData.length} imagem(ns) - ${mode}`,
+            undefined // generation_id será adicionado quando salvarmos no histórico
+        );
+
+        if (!creditResult.success) {
+            console.error('Erro ao usar créditos:', creditResult.error);
+            // Não falhar a geração por erro de créditos, apenas logar
+        } else {
+            console.log(`✅ Créditos usados: ${actualCreditsUsed}, Novo saldo: ${creditResult.newBalance}`);
+        }
+
+        return NextResponse.json({ 
+            images: savedImagesData, 
+            usage: result.usage,
+            credits_used: actualCreditsUsed,
+            credits_remaining: creditResult.newBalance || 0
+        });
     } catch (error: unknown) {
         console.error('Error in /api/images:', error);
 

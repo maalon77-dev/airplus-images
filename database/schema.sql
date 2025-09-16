@@ -32,6 +32,74 @@ CREATE TABLE IF NOT EXISTS images (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Tabela para planos de pagamento
+CREATE TABLE IF NOT EXISTS payment_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price_usd DECIMAL(10,2) NOT NULL,
+    price_brl DECIMAL(10,2) NOT NULL,
+    credits_included INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    stripe_price_id_usd VARCHAR(255),
+    stripe_price_id_brl VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_is_active (is_active)
+);
+
+-- Tabela para transações de pagamento
+CREATE TABLE IF NOT EXISTS payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    plan_id INT NOT NULL,
+    stripe_payment_intent_id VARCHAR(255) NOT NULL UNIQUE,
+    amount_usd DECIMAL(10,2) NOT NULL,
+    amount_brl DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
+    status ENUM('pending', 'succeeded', 'failed', 'canceled', 'refunded') NOT NULL DEFAULT 'pending',
+    credits_granted INT NOT NULL DEFAULT 0,
+    metadata JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_stripe_payment_intent_id (stripe_payment_intent_id),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (plan_id) REFERENCES payment_plans(id) ON DELETE RESTRICT
+);
+
+-- Tabela para controle de créditos dos usuários
+CREATE TABLE IF NOT EXISTS user_credits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    credits_balance INT NOT NULL DEFAULT 0,
+    total_credits_earned INT NOT NULL DEFAULT 0,
+    total_credits_used INT NOT NULL DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_credits_balance (credits_balance),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Tabela para histórico de uso de créditos
+CREATE TABLE IF NOT EXISTS credit_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    transaction_type ENUM('earned', 'used', 'refunded') NOT NULL,
+    amount INT NOT NULL,
+    description TEXT,
+    related_payment_id INT NULL,
+    related_generation_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_transaction_type (transaction_type),
+    INDEX idx_created_at (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (related_payment_id) REFERENCES payments(id) ON DELETE SET NULL
+);
+
 -- Tabela para armazenar o histórico de gerações
 CREATE TABLE IF NOT EXISTS generation_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -50,6 +118,7 @@ CREATE TABLE IF NOT EXISTS generation_history (
     text_input_tokens INT NOT NULL DEFAULT 0,
     image_input_tokens INT NOT NULL DEFAULT 0,
     image_output_tokens INT NOT NULL DEFAULT 0,
+    credits_used INT NOT NULL DEFAULT 0,
     user_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_timestamp (timestamp),
