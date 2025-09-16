@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import MySQLDatabase from '@/lib/mysql-db';
 
 // GET /api/credits/history - Obter histórico de transações de créditos
 export async function GET(request: NextRequest) {
     try {
-        const user = await requireAuth(request);
+        const user = await getAuthenticatedUser(request);
+        
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'Não autorizado' },
+                { status: 401 }
+            );
+        }
         const { searchParams } = new URL(request.url);
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');

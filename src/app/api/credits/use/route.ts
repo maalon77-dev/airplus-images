@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import MySQLDatabase from '@/lib/mysql-db';
 
 // POST /api/credits/use - Usar créditos para geração de imagem
 export async function POST(request: NextRequest) {
     try {
-        const user = await requireAuth(request);
+        const user = await getAuthenticatedUser(request);
+        
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'Não autorizado' },
+                { status: 401 }
+            );
+        }
         const body = await request.json();
         const { credits_to_use, description, generation_id } = body;
 

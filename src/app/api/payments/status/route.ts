@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import MySQLDatabase from '@/lib/mysql-db';
 
 // GET /api/payments/status - Verificar status de pagamentos do usuário
 export async function GET(request: NextRequest) {
     try {
-        const user = await requireAuth(request);
+        const user = await getAuthenticatedUser(request);
+        
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'Não autorizado' },
+                { status: 401 }
+            );
+        }
         const { searchParams } = new URL(request.url);
         const payment_intent_id = searchParams.get('payment_intent_id');
 

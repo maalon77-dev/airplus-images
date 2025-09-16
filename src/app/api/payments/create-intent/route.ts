@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { createPaymentIntent } from '@/lib/stripe';
 import MySQLDatabase from '@/lib/mysql-db';
 
 // POST /api/payments/create-intent - Criar Payment Intent do Stripe
 export async function POST(request: NextRequest) {
     try {
-        const user = await requireAuth(request);
+        const user = await getAuthenticatedUser(request);
+        
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'Não autorizado' },
+                { status: 401 }
+            );
+        }
         const body = await request.json();
         const { plan_id, currency } = body;
 
