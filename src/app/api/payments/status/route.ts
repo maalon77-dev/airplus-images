@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 
 // GET /api/payments/status - Verificar status de pagamentos do usuário
 export async function GET(request: NextRequest) {
@@ -16,12 +16,12 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const payment_intent_id = searchParams.get('payment_intent_id');
 
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
         if (payment_intent_id) {
             // Buscar pagamento específico
-            const [payments] = await db.connection.execute(`
+            const [payments] = await connection.execute(`
                 SELECT 
                     p.id,
                     p.stripe_payment_intent_id,
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
                 WHERE p.user_id = ? AND p.stripe_payment_intent_id = ?
             `, [user.id, payment_intent_id]);
 
-            await db.disconnect();
+            connection.release();
 
             if (!Array.isArray(payments) || payments.length === 0) {
                 return NextResponse.json(
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
         } else {
             // Buscar todos os pagamentos do usuário
-            const [payments] = await db.connection.execute(`
+            const [payments] = await connection.execute(`
                 SELECT 
                     p.id,
                     p.stripe_payment_intent_id,
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
             `, [user.id]);
 
             // Buscar saldo de créditos do usuário
-            const [credits] = await db.connection.execute(`
+            const [credits] = await connection.execute(`
                 SELECT 
                     credits_balance,
                     total_credits_earned,
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
                 WHERE user_id = ?
             `, [user.id]);
 
-            await db.disconnect();
+            connection.release();
 
             const userCredits = Array.isArray(credits) && credits.length > 0 
                 ? credits[0] 

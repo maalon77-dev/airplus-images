@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Registrar transação de uso
-        await db.connection.execute(`
+        await connection.execute(`
             INSERT INTO credit_transactions 
             (user_id, transaction_type, amount, description, related_generation_id)
             VALUES (?, 'used', ?, ?, ?)

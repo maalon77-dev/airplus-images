@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 import { requireAuth } from '@/lib/auth';
 
 // GET - Recuperar histórico do MySQL

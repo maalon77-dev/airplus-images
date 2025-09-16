@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 
 // GET /api/payments/plans - Listar planos de pagamento disponíveis
 export async function GET() {
     try {
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
-        const [plans] = await db.connection.execute(`
+        const [plans] = await connection.execute(`
             SELECT 
                 id,
                 name,
@@ -22,7 +22,7 @@ export async function GET() {
             ORDER BY price_usd ASC
         `);
 
-        await db.disconnect();
+        connection.release();
 
         return NextResponse.json({
             success: true,
@@ -60,16 +60,16 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
-        const [result] = await db.connection.execute(`
+        const [result] = await connection.execute(`
             INSERT INTO payment_plans 
             (name, description, price_usd, price_brl, credits_included, stripe_price_id_usd, stripe_price_id_brl)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [name, description, price_usd, price_brl, credits_included, stripe_price_id_usd, stripe_price_id_brl]);
 
-        await db.disconnect();
+        connection.release();
 
         return NextResponse.json({
             success: true,

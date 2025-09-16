@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { createPaymentIntent } from '@/lib/stripe';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 
 // POST /api/payments/create-intent - Criar Payment Intent do Stripe
 export async function POST(request: NextRequest) {
@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Buscar plano no banco de dados
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
-        const [plans] = await db.connection.execute(`
+        const [plans] = await connection.execute(`
             SELECT 
                 id,
                 name,
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         `, [plan_id]);
 
         if (!Array.isArray(plans) || plans.length === 0) {
-            await db.disconnect();
+            connection.release();
             return NextResponse.json(
                 { success: false, error: 'Plano não encontrado ou inativo' },
                 { status: 404 }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
             : plan.stripe_price_id_brl;
 
         if (!stripePriceId) {
-            await db.disconnect();
+            connection.release();
             return NextResponse.json(
                 { success: false, error: `Price ID não configurado para ${currency.toUpperCase()}` },
                 { status: 400 }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         const paymentIntent = await createPaymentIntent(plan_id, currency, user.id);
 
         // Salvar transação no banco
-        await db.connection.execute(`
+        await connection.execute(`
             INSERT INTO payments 
             (user_id, plan_id, stripe_payment_intent_id, amount_usd, amount_brl, currency, status, credits_granted)
             VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
             plan.credits_included
         ]);
 
-        await db.disconnect();
+        connection.release();
 
         return NextResponse.json({
             success: true,

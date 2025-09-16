@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import path from 'path';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 import { requireAuth } from '@/lib/auth';
 import { createFTPUploadService } from '@/lib/ftp-upload';
 import { hasEnoughCredits, consumeCredits, calculateCreditsFromUsage } from '@/lib/credits';

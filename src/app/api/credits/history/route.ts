@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import MySQLDatabase from '@/lib/mysql-db';
+import { pool } from '@/lib/mysql-db';
 
 // GET /api/credits/history - Obter histórico de transações de créditos
 export async function GET(request: NextRequest) {
@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
 
-        const db = new MySQLDatabase();
-        await db.connect();
+        const connection = await pool.getConnection();
+        
 
         // Buscar histórico de transações
-        const [transactions] = await db.connection.execute(`
+        const [transactions] = await connection.execute(`
             SELECT 
                 ct.id,
                 ct.transaction_type,
@@ -41,11 +41,11 @@ export async function GET(request: NextRequest) {
         `, [user.id, limit, offset]);
 
         // Contar total de transações
-        const [countResult] = await db.connection.execute(`
+        const [countResult] = await connection.execute(`
             SELECT COUNT(*) as total FROM credit_transactions WHERE user_id = ?
         `, [user.id]);
 
-        await db.disconnect();
+        connection.release();
 
         const total = Array.isArray(countResult) && countResult.length > 0 
             ? (countResult[0] as { total: number }).total 
